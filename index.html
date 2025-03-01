@@ -177,6 +177,14 @@
         left: 20px;
         z-index: 10;
       }
+      /* When in Lessons view, style nav at absolute top with background */
+      nav.lessons {
+        top: 0;
+        left: 0;
+        width: 100%;
+        background: rgba(0, 10, 30, 0.9);
+        padding: 10px;
+      }
       .nav-button {
         background: rgba(0, 10, 30, 0.7);
         backdrop-filter: blur(10px);
@@ -279,7 +287,7 @@
     <!-- Main Container -->
     <div class="container">
       <!-- Navigation -->
-      <nav>
+      <nav id="nav">
         <button class="nav-button" id="view-solar-system">Solar System</button>
         <button class="nav-button" id="view-kepler-laws">Lessons</button>
       </nav>
@@ -828,7 +836,7 @@
 
       // Show information panel for selected object
       function showObjectInfo(userData) {
-        // Do not show info panel for asteroids on mobile
+        // Do not show info panel for asteroids
         if(userData.type === "asteroid") return;
         const infoPanel = document.getElementById("info-panel");
         const nameEl = document.getElementById("selected-planet-name");
@@ -854,6 +862,10 @@
           document.getElementById("adjust-semi-major").value = 1;
           document.getElementById("adjust-ecc-value").textContent = planet.eccentricity;
           document.getElementById("adjust-semi-value").textContent = "1x";
+          // On mobile, hide the nav when info panel is active in Solar System view
+          if(window.innerWidth < 768) {
+            document.getElementById("nav").style.display = "none";
+          }
         } else if(userData.type === "moon"){
           const parent = planetData[userData.parent];
           nameEl.textContent = "Moon: " + userData.name + " of " + parent.name;
@@ -885,15 +897,25 @@
           document.getElementById("solar-system").style.display = "block";
           document.getElementById("kepler-laws").style.display = "none";
           document.getElementById("controls").style.display = "block";
+          // In Solar System view, ensure nav is visible and remove lessons styling
+          document.getElementById("nav").style.display = "block";
+          document.getElementById("nav").classList.remove("lessons");
         });
         document.getElementById("view-kepler-laws").addEventListener("click", function(){
           document.getElementById("solar-system").style.display = "none";
           document.getElementById("kepler-laws").style.display = "block";
           document.getElementById("controls").style.display = "none";
+          // For Lessons, add the 'lessons' class to nav so that it sits at top with a background
+          document.getElementById("nav").classList.add("lessons");
+          document.getElementById("nav").style.display = "block";
           initLawVisualizations();
         });
         document.querySelector(".close-btn").addEventListener("click", function(){
           document.getElementById("info-panel").classList.remove("active");
+          // When closing info panel on mobile in Solar System view, re-show nav
+          if(window.innerWidth < 768) {
+            document.getElementById("nav").style.display = "block";
+          }
         });
         document.getElementById("time-scale").addEventListener("input", function(){
           document.getElementById("time-value").textContent = this.value + "x";
