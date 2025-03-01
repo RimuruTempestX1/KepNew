@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <!-- Import map for modules -->
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.159.0/build/three.module.js"
+        }
+      }
+    </script>
+    <title>Kepler's & Newton's Laws: Solar System Explorer</title>
+    <style>
+      /* Global Styles */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: Arial, sans-serif;
+      }
+      html, body {
+        width: 100%;
+        height: 100%;
+        overflow-x: hidden;
+      }
+      body {
+        background-color: #050e1a;
+        color: #fff;
+        -ms-touch-action: none;
+        touch-action: none;
+      }
+      /* Splash Screen */
+      #splash-screen {
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        background-color: #050e1a;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        transition: opacity 1.5s ease-out;
+      }
+      #splash-logo {
+        width: 180px;
+        height: 180px;
+        border-radius: 50%;
+        background: radial-gradient(circle, #ff9500, #ff5e00);
+        box-shadow: 0 0 60px rgba(255, 94, 0, 0.6);
+        animation: pulse 2s infinite;
+      }
+      @keyframes pulse {
+        0% { transform: scale(0.95); box-shadow: 0 0 40px rgba(255, 94, 0, 0.5); }
+        50% { transform: scale(1.05); box-shadow: 0 0 70px rgba(255, 94, 0, 0.7); }
+        100% { transform: scale(0.95); box-shadow: 0 0 40px rgba(255, 94, 0, 0.5); }
+      }
+      .splash-text {
+        margin-top: 20px;
+        font-size: 28px;
+        letter-spacing: 5px;
+        text-transform: uppercase;
+        opacity: 0;
+        animation: fadeIn 2s forwards 0.5s;
+      }
+      @keyframes fadeIn { to { opacity: 1; } }
+      /* Main Container */
+      .container {
+        width: 100%;
+        height: 100vh;
+        position: relative;
+        overflow: hidden;
+      }
+      /* Solar System Visualization */
+      #solar-system {
+        width: 100vw;
+        height: 100vh;
+        position: absolute;
+        top: 0;
+        left: 0;
+        /* Prevent default scrolling and pinch zoom issues */
+        touch-action: pan-y pinch-zoom;
+      }
+      /* UI Controls */
+      #controls {
+        position: absolute;
+        bottom: 20px;
+        left: 20px;
+        z-index: 10;
+        background: rgba(0, 10, 30, 0.7);
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
+        padding: 15px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      #controls h3 {
+        margin-bottom: 15px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding-bottom: 10px;
+      }
+      .control-group { margin-bottom: 15px; }
+      .control-label {
+        display: block;
+        margin-bottom: 5px;
+        font-size: 14px;
+        color: #aaa;
+      }
+      input[type="range"] {
+        width: 100%;
+        margin-bottom: 10px;
+        background: rgba(255, 255, 255, 0.1);
+        height: 5px;
+        border-radius: 5px;
+      }
+      /* Info Panel */
+      #info-panel {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        width: 300px;
+        max-height: 80vh;
+        overflow-y: auto;
+        background: rgba(0, 10, 30, 0.7);
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        transform: translateX(350px);
+        transition: transform 0.5s ease;
+      }
+      #info-panel.active { transform: translateX(0); }
+      .info-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 15px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      .planet-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        margin-right: 15px;
+        background-size: cover;
+        background-position: center;
+        object-fit: cover;
+        overflow: hidden;
+      }
+      .planet-title { font-size: 24px; margin: 0; }
+      .info-content p { margin-bottom: 10px; line-height: 1.6; }
+      /* Adjust Parameters Form */
+      .adjust-parameters {
+        margin-top: 20px;
+        padding-top: 10px;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      .adjust-parameters label { font-size: 14px; color: #ccc; }
+      .adjust-parameters input[type="range"] { width: 100%; margin: 5px 0 10px; }
+      .adjust-parameters button {
+        background: #ff5e00;
+        border: none;
+        padding: 8px 12px;
+        color: #fff;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background 0.3s;
+      }
+      .adjust-parameters button:hover { background: #ff9500; }
+      /* Navigation */
+      nav {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        z-index: 10;
+      }
+      .nav-button {
+        background: rgba(0, 10, 30, 0.7);
+        backdrop-filter: blur(10px);
+        border-radius: 8px;
+        padding: 10px 15px;
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        margin-right: 10px;
+        cursor: pointer;
+        transition: background 0.3s;
+      }
+      .nav-button:hover { background: rgba(0, 20, 60, 0.8); }
+      /* Kepler's Laws Section */
+      #kepler-laws {
+        display: none;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: #050e1a;
+        z-index: 5;
+        padding: 80px 20px 20px;
+        overflow-y: auto;
+      }
+      .law-container {
+        max-width: 1000px;
+        margin: 0 auto 40px;
+        background: rgba(0, 10, 30, 0.7);
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      .law-container h2 {
+        margin-bottom: 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding-bottom: 15px;
+      }
+      .law-content {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+      @media (min-width: 768px) { .law-content { flex-direction: row; } }
+      .law-text { flex: 1; }
+      .law-viz {
+        flex: 1;
+        min-height: 250px;
+        background: rgba(0, 5, 15, 0.5);
+        border-radius: 10px;
+        position: relative;
+        overflow: hidden;
+      }
+      .loading {
+        border: 4px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top: 4px solid #fff;
+        width: 30px;
+        height: 30px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto;
+      }
+      @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+      /* Responsive adjustments */
+      @media (max-width: 768px) {
+        #controls, nav {
+          left: 10px;
+          bottom: 10px;
+          padding: 10px;
+        }
+        #info-panel {
+          top: 10px;
+          right: 10px;
+          width: calc(100% - 20px);
+          max-height: 50vh;
+        }
+        .nav-button {
+          padding: 8px 12px;
+          font-size: 14px;
+        }
+      }
+      @media (max-width: 480px) {
+        .splash-text { font-size: 22px; }
+        #controls, nav, #info-panel {
+          font-size: 14px;
+          padding: 8px;
+        }
+        #info-panel { width: calc(100% - 16px); }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Splash Screen -->
+    <div id="splash-screen">
+      <div id="splash-logo"></div>
+      <div class="splash-text">KepNew Space</div>
+    </div>
+    <!-- Main Container -->
+    <div class="container">
+      <!-- Navigation -->
+      <nav>
+        <button class="nav-button" id="view-solar-system">Solar System</button>
+        <button class="nav-button" id="view-kepler-laws">Lessons</button>
+      </nav>
+      <!-- Solar System Visualization -->
+      <div id="solar-system"></div>
+      <!-- Controls Panel (visible only in Solar System view) -->
+      <div id="controls">
+        <h3>Controls</h3>
+        <div class="control-group">
+          <label class="control-label">Time Scale</label>
+          <input type="range" id="time-scale" min="0.1" max="10" step="0.1" value="1" />
+          <span id="time-value">1x</span>
+        </div>
+        <div class="control-group">
+          <label class="control-label">Global Eccentricity</label>
+          <input type="range" id="eccentricity" min="0" max="0.9" step="0.01" value="0.2" />
+          <span id="eccentricity-value">0.2</span>
+        </div>
+        <div class="control-group">
+          <label class="control-label">Global Semi-major Axis Multiplier</label>
+          <input type="range" id="semi-major" min="0.1" max="2" step="0.1" value="1" />
+          <span id="semi-major-value">1x</span>
+        </div>
+        <div class="control-group">
+          <button id="reset-controls">Reset Controls</button>
+        </div>
+      </div>
+      <!-- Info Panel for Objects (hidden by default on mobile) -->
+      <div id="info-panel">
+        <button class="close-btn" style="background-color: transparent; color: white;">&times;</button>
+        <div class="info-header">
+          <div class="planet-icon" id="selected-planet-icon"></div>
+          <h2 class="planet-title" id="selected-planet-name">Object Name</h2>
+        </div>
+        <div class="info-content" id="planet-info">
+          <!-- Detailed information will be inserted here -->
+        </div>
+        <div class="adjust-parameters" id="adjust-form" style="display: none;">
+          <h3>Adjust Planet Parameters</h3>
+          <label>
+            Eccentricity: <span id="adjust-ecc-value"></span>
+            <input type="range" id="adjust-eccentricity" min="0" max="0.9" step="0.01" />
+          </label>
+          <label>
+            Semi-major Axis Multiplier: <span id="adjust-semi-value"></span>
+            <input type="range" id="adjust-semi-major" min="0.5" max="2" step="0.1" value="1" />
+          </label>
+          <br /><br />
+          <button id="reset-adjust">Reset Adjustments</button>
+        </div>
+      </div>
+      <!-- Kepler's Laws Section (Lesson Content, scrollable vertically) -->
+      <div id="kepler-laws">
+        <!-- Newton's Law of Universal Gravitation -->
+        <div class="law-container">
+          <h2>Newton's Law of Universal Gravitation</h2>
+          <div class="law-content">
+            <div class="law-text">
+              <p>
+                Newton discovered that every mass attracts every other mass. This gravitational force is given by:
+              </p>
+              <p style="text-align:center;"><strong>F = G (m₁ m₂) / r²</strong></p>
+              <p>
+                In this interactive visualization, tap anywhere on the canvas to freeze/unfreeze the scene. The distance between the masses and the resulting force relationship are indicated.
+              </p>
+            </div>
+            <div class="law-viz" id="newton-law-viz"><div class="loading"></div></div>
+          </div>
+        </div>
+        <!-- Kepler's First Law -->
+        <div class="law-container">
+          <h2>Kepler's First Law: The Law of Elliptical Orbits</h2>
+          <div class="law-content">
+            <div class="law-text">
+              <p>
+                Planets orbit the Sun in ellipses with the Sun at one focus. The ellipse’s shape is defined by its semi‑major axis (a) and eccentricity (e).
+              </p>
+              <p>
+                In this interactive experiment, tap the canvas to freeze the planet’s motion and view its current orbital parameters.
+              </p>
+            </div>
+            <div class="law-viz" id="first-law-viz"><div class="loading"></div></div>
+          </div>
+        </div>
+        <!-- Kepler's Second Law -->
+        <div class="law-container">
+          <h2>Kepler's Second Law: The Law of Equal Areas</h2>
+          <div class="law-content">
+            <div class="law-text">
+              <p>
+                A line joining a planet and the Sun sweeps out equal areas in equal time intervals.
+              </p>
+              <p>
+                In this interactive visualization, tap the red wedge (sector) to freeze the sweep. The computed area is displayed below.
+              </p>
+            </div>
+            <div class="law-viz" id="second-law-viz"><div class="loading"></div></div>
+          </div>
+        </div>
+        <!-- Kepler's Third Law -->
+        <div class="law-container">
+          <h2>Kepler's Third Law: The Law of Harmonies</h2>
+          <div class="law-content">
+            <div class="law-text">
+              <p>
+                The square of a planet's orbital period (T) is proportional to the cube of its orbit's semi‑major axis (a): T² ∝ a³.
+              </p>
+              <p>
+                In this interactive scene, tap to freeze the motion of two planets and view their current period ratio.
+              </p>
+            </div>
+            <div class="law-viz" id="third-law-viz"><div class="loading"></div></div>
+          </div>
+        </div>
+        <!-- Mercury Example -->
+        <div class="law-container">
+          <h2>Example: Calculating Mercury's Orbital Period</h2>
+          <div class="law-content">
+            <div class="law-text">
+              <p>
+                Given Mercury’s distance is 0.4 AU and Earth’s orbital period is 1 year, Kepler’s Third Law yields:
+              </p>
+              <p style="text-align:center;">Tₑ² / 1³ = Tₘ² / (0.4)³</p>
+              <ul>
+                <li>(0.4)³ = 0.064</li>
+                <li>Tₘ² = 0.064, so Tₘ ≈ 0.253 years (≈92.3 days)</li>
+              </ul>
+              <p>
+                Tap the canvas to freeze Mercury’s orbit and see the computed period overlay relative to Earth.
+              </p>
+            </div>
+            <div class="law-viz" id="kepler-example-viz"><div class="loading"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Script -->
+    <script type="module">
+      // Import dependencies
+      import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.159.0/build/three.module.js';
+      import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.159.0/examples/jsm/controls/OrbitControls.js';
+      import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.159.0/examples/jsm/loaders/GLTFLoader.js';
+      import { EffectComposer } from 'https://cdn.jsdelivr.net/npm/three@0.159.0/examples/jsm/postprocessing/EffectComposer.js';
+      import { RenderPass } from 'https://cdn.jsdelivr.net/npm/three@0.159.0/examples/jsm/postprocessing/RenderPass.js';
+      import { UnrealBloomPass } from 'https://cdn.jsdelivr.net/npm/three@0.159.0/examples/jsm/postprocessing/UnrealBloomPass.js';
+      import { EXRLoader } from 'https://cdn.jsdelivr.net/npm/three@0.159.0/examples/jsm/loaders/EXRLoader.js';
+
+      // Global variables
+      let scene, camera, renderer, controls, composer;
+      const planetsGlobal = {};
+      let selectedPlanetKey = null;
+      let asteroidBelt;
+      const clickableObjects = [];
+      const totalAsteroids = 300;
+      const asteroidModels = [];
+      const asteroidPaths = [
+        "mesh/asteroid.glb",
+        "mesh/asteroid2.glb",
+        "mesh/asteroid3.glb",
+        "mesh/asteroid4.glb"
+      ];
+
+      // Model paths and data
+      const models = {
+        sun: 'mesh/sun.glb',
+        mercury: 'mesh/mercury.glb',
+        venus: 'mesh/venus.glb',
+        earth: 'mesh/earth.glb',
+        mars: 'mesh/mars.glb',
+        jupiter: 'mesh/jupiter.glb',
+        saturn: 'mesh/saturn.glb',
+        uranus: 'mesh/uranus.glb',
+        neptune: 'mesh/neptune.glb'
+      };
+
+      const planetData = {
+        mercury: { name: "Mercury", semiMajorAxis: 0.39, eccentricity: 0.206, orbitalPeriod: 88, rotationPeriod: 58.6, description: "Mercury is the smallest and innermost planet.", color: "#b1b1b1" },
+        venus:   { name: "Venus", semiMajorAxis: 0.72, eccentricity: 0.007, orbitalPeriod: 225, rotationPeriod: -243, description: "Venus has a runaway greenhouse effect.", color: "#f5deb3" },
+        earth:   { name: "Earth", semiMajorAxis: 1.00, eccentricity: 0.017, orbitalPeriod: 365.25, rotationPeriod: 1, description: "Earth supports life with abundant water.", color: "#2a8fbd" },
+        mars:    { name: "Mars", semiMajorAxis: 1.52, eccentricity: 0.093, orbitalPeriod: 687, rotationPeriod: 1.03, description: "Mars is the Red Planet.", color: "#d14b28" },
+        jupiter: { name: "Jupiter", semiMajorAxis: 5.20, eccentricity: 0.048, orbitalPeriod: 4333, rotationPeriod: 0.41, description: "Jupiter is a gas giant.", color: "#d2b48c" },
+        saturn:  { name: "Saturn", semiMajorAxis: 9.58, eccentricity: 0.056, orbitalPeriod: 10759, rotationPeriod: 0.45, description: "Saturn is known for its rings.", color: "#f4a460" },
+        uranus:  { name: "Uranus", semiMajorAxis: 19.22, eccentricity: 0.046, orbitalPeriod: 30687, rotationPeriod: -0.72, description: "Uranus rotates sideways.", color: "#7fffd4" },
+        neptune: { name: "Neptune", semiMajorAxis: 30.05, eccentricity: 0.010, orbitalPeriod: 60190, rotationPeriod: 0.67, description: "Neptune is a deep blue ice giant.", color: "#4169e1" }
+      };
+
+      const sunData = { name: "sun", description: "The Sun powers our solar system.", color: "#ffcc00" };
+
+      const moonsData = {
+        earth: [ { name: "moon", orbitRadius: 8, orbitSpeed: 1, scale: 0.2, description: "Earth's Moon influences tides." } ],
+        mars: [ { name: "phobos", orbitRadius: 8, orbitSpeed: 1.5, scale: 0.015, description: "Phobos is Mars' larger moon." },
+                { name: "deimos", orbitRadius: 10, orbitSpeed: 1, scale: 0.015, description: "Deimos is Mars' smaller moon." } ],
+        jupiter: [
+            { name: "io", orbitRadius: 12, orbitSpeed: 1.8, scale: 0.001, description: "Io is volcanically active." },
+            { name: "europa", orbitRadius: 16, orbitSpeed: 1.6, scale: 0.001, description: "Europa may hide a subsurface ocean." },
+            { name: "ganymede", orbitRadius: 20, orbitSpeed: 1.4, scale: 0.001, description: "Ganymede is the largest moon." },
+            { name: "callisto", orbitRadius: 24, orbitSpeed: 1.2, scale: 0.001, description: "Callisto is heavily cratered." }
+          ],
+      saturn: [
+            { name: "titan", orbitRadius: 18, orbitSpeed: 1.3, scale: 0.0005, description: "Titan has a thick atmosphere." },
+            { name: "rhea", orbitRadius: 22, orbitSpeed: 1.4, scale: 0.0005, description: "Rhea is a mid-sized, cratered moon." }
+          ],
+          uranus: [
+            { name: "titania", orbitRadius: 18, orbitSpeed: 1.5, scale: 0.0007, description: "Titania features deep canyons." },
+            { name: "oberon", orbitRadius: 22, orbitSpeed: 1.4, scale: 0.0007, description: "Oberon is heavily cratered." }
+          ],
+          neptune: [ { name: "triton", orbitRadius: 16, orbitSpeed: 1.6, scale: 0.001, description: "Triton has a retrograde orbit and geysers." } ]
+      };
+
+      const DEFAULT_TIME_SCALE = 1;
+      const DEFAULT_ECCENTRICITY = 0.2;
+      const DEFAULT_SEMI_MAJOR_MULTIPLIER = 1;
+      const beltInnerRadius = 100;
+      const beltOuterRadius = 110;
+
+      const gltfLoader = new GLTFLoader();
+
+      // Preload asteroid models
+      function preloadAsteroids(callback) {
+        let loaded = 0;
+        asteroidPaths.forEach(path => {
+          gltfLoader.load(path, function(gltf) {
+            asteroidModels.push(gltf.scene);
+            loaded++;
+            if (loaded === asteroidPaths.length) {
+              callback();
+            }
+          });
+        });
+      }
+
+      // Create the asteroid belt
+      function createAsteroidBelt() {
+        const group = new THREE.Group();
+        const countPerModel = Math.floor(totalAsteroids / asteroidModels.length);
+        asteroidModels.forEach(model => {
+          let baseMesh;
+          model.traverse(child => { if(child.isMesh && !baseMesh) baseMesh = child; });
+          if (!baseMesh) return;
+          const geometry = baseMesh.geometry;
+          const material = baseMesh.material.clone();
+          material.frustumCulled = false;
+          const instancedMesh = new THREE.InstancedMesh(geometry, material, countPerModel);
+          instancedMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+          const dummy = new THREE.Object3D();
+          for(let i = 0; i < countPerModel; i++){
+            const theta = Math.random() * Math.PI * 2;
+            const radius = beltInnerRadius + Math.random() * (beltOuterRadius - beltInnerRadius);
+            dummy.position.set(radius * Math.cos(theta), (Math.random() - 0.5) * 2, radius * Math.sin(theta));
+            const scale = 0.002;
+            dummy.scale.set(scale, scale, scale);
+            dummy.rotation.y = Math.random() * Math.PI * 2;
+            dummy.updateMatrix();
+            instancedMesh.setMatrixAt(i, dummy.matrix);
+          }
+          instancedMesh.instanceMatrix.needsUpdate = true;
+          instancedMesh.userData = { type: "asteroid" };
+          group.add(instancedMesh);
+        });
+        scene.add(group);
+        asteroidBelt = group;
+      }
+
+      // Initialize the Solar System
+      function initSolarSystem() {
+        scene = new THREE.Scene();
+        camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10000);
+        renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.getElementById("solar-system").appendChild(renderer.domElement);
+        controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.minDistance = 1;
+        controls.maxDistance = 10000;
+        camera.position.set(0, 50, 100);
+        composer = new EffectComposer(renderer);
+        composer.addPass(new RenderPass(scene, camera));
+        const bloomParams = { exposure: 1, bloomStrength: 1.5, bloomThreshold: 0.2, bloomRadius: 0.4 };
+        const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), bloomParams.bloomStrength, bloomParams.bloomRadius, bloomParams.bloomThreshold);
+        composer.addPass(bloomPass);
+        const ambientLight = new THREE.AmbientLight(0x404040);
+        scene.add(ambientLight);
+        const sunLight = new THREE.PointLight(0xffffff, 1000, 500);
+        scene.add(sunLight);
+        new EXRLoader().load("mesh/Background.exr", function(texture) {
+          texture.mapping = THREE.EquirectangularReflectionMapping;
+          texture.encoding = THREE.LinearEncoding;
+          scene.background = texture;
+        });
+        gltfLoader.load(models.sun, function(gltf) {
+          const sun = gltf.scene;
+          sun.traverse(child => {
+            if(child.isMesh){
+              child.userData = { ...child.userData, type: "sun" };
+              child.matrixAutoUpdate = false;
+              clickableObjects.push(child);
+            }
+          });
+          sun.add(sunLight);
+          scene.add(sun);
+        });
+        const orbitScale = 50;
+        Object.entries(planetData).forEach(([key, planet]) => {
+          gltfLoader.load(models[key], function(gltf) {
+            const planetModel = gltf.scene;
+            const angle = Math.random() * Math.PI * 2;
+            const globalMultiplier = parseFloat(document.getElementById("semi-major").value);
+            const a = planet.semiMajorAxis * globalMultiplier * orbitScale;
+            const ecc = planet.eccentricity;
+            const b = a * Math.sqrt(1 - ecc ** 2);
+            planetModel.position.x = a * (Math.cos(angle) - ecc);
+            planetModel.position.z = b * Math.sin(angle);
+            planetModel.traverse(child => {
+              if(child.isMesh){
+                child.frustumCulled = true;
+                child.matrixAutoUpdate = false;
+                child.userData = { ...child.userData, type: "planet", key: key };
+                clickableObjects.push(child);
+              }
+            });
+            scene.add(planetModel);
+            const orbitPoints = [];
+            for(let i = 0; i <= 100; i++){
+              const theta = (i / 100) * Math.PI * 2;
+              orbitPoints.push(a * (Math.cos(theta) - ecc), 0, b * Math.sin(theta));
+            }
+            const orbitGeometry = new THREE.BufferGeometry();
+            orbitGeometry.setAttribute("position", new THREE.Float32BufferAttribute(orbitPoints, 3));
+            const orbitMaterial = new THREE.LineBasicMaterial({ color: 0x444444 });
+            const orbitLine = new THREE.Line(orbitGeometry, orbitMaterial);
+            orbitLine.frustumCulled = true;
+            orbitLine.matrixAutoUpdate = false;
+            scene.add(orbitLine);
+            let moons = [];
+            if(moonsData[key]){
+              moonsData[key].forEach(mData => {
+                gltfLoader.load(`mesh/${mData.name}.glb`, function(gltf) {
+                  const moonModel = gltf.scene;
+                  moonModel.name = "moon_" + mData.name;
+                  moonModel.userData = { type: "moon", parent: key, name: mData.name, description: mData.description };
+                  moonModel.scale.set(mData.scale || 1, mData.scale || 1, mData.scale || 1);
+                  moonModel.updateMatrix();
+                  const orbitRadius = mData.orbitRadius;
+                  const mAngle = Math.random() * Math.PI * 2;
+                  moonModel.position.set(Math.cos(mAngle) * orbitRadius, 0, Math.sin(mAngle) * orbitRadius);
+                  moonModel.traverse(child => {
+                    if(child.isMesh){
+                      child.userData = moonModel.userData;
+                      child.frustumCulled = true;
+                      clickableObjects.push(child);
+                    }
+                  });
+                  planetModel.add(moonModel);
+                  const moonOrbitPoints = [];
+                  const segments = 64;
+                  for(let i = 0; i <= segments; i++){
+                    const theta = (i / segments) * Math.PI * 2;
+                    moonOrbitPoints.push(Math.cos(theta) * orbitRadius, 0, Math.sin(theta) * orbitRadius);
+                  }
+                  const moonOrbitGeometry = new THREE.BufferGeometry();
+                  moonOrbitGeometry.setAttribute("position", new THREE.Float32BufferAttribute(moonOrbitPoints, 3));
+                  const moonOrbitMaterial = new THREE.LineBasicMaterial({ color: 0x888888 });
+                  const moonOrbitLine = new THREE.Line(moonOrbitGeometry, moonOrbitMaterial);
+                  moonOrbitLine.frustumCulled = true;
+                  moonOrbitLine.matrixAutoUpdate = false;
+                  planetModel.add(moonOrbitLine);
+                  moons.push({ mesh: moonModel, orbitRadius: orbitRadius, angle: mAngle, orbitSpeed: mData.orbitSpeed, orbitLine: moonOrbitLine });
+                });
+              });
+            }
+            planetsGlobal[key] = { mesh: planetModel, angle: angle, data: { ...planet, semiMajorMultiplier: 1 }, orbitLine: orbitLine, moons: moons };
+          });
+        });
+        createAsteroidBelt();
+        window.addEventListener("resize", function(){
+          camera.aspect = window.innerWidth / window.innerHeight;
+          camera.updateProjectionMatrix();
+          renderer.setSize(window.innerWidth, window.innerHeight);
+          composer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Raycaster for detecting touches and clicks
+        const raycaster = new THREE.Raycaster();
+        const pointer = new THREE.Vector2();
+
+        // Common function to detect object interaction (ignores asteroids)
+        function detectInteraction(clientX, clientY) {
+          pointer.x = (clientX / window.innerWidth) * 2 - 1;
+          pointer.y = -(clientY / window.innerHeight) * 2 + 1;
+          raycaster.setFromCamera(pointer, camera);
+          const intersects = raycaster.intersectObjects(clickableObjects, true);
+          if(intersects.length > 0){
+            const data = intersects[0].object.userData;
+            // Do not show info panel for asteroids
+            if(data && data.type && data.type !== "asteroid"){
+              showObjectInfo(data);
+            }
+          }
+        }
+
+        // Mouse click event (for desktops)
+        document.getElementById("solar-system").addEventListener("click", function(event){
+          detectInteraction(event.clientX, event.clientY);
+        });
+
+        // Touch event (for mobile)
+        document.getElementById("solar-system").addEventListener("touchend", function(event){
+          event.preventDefault();
+          if(event.changedTouches.length > 0){
+            const touch = event.changedTouches[0];
+            detectInteraction(touch.clientX, touch.clientY);
+          }
+        });
+
+        const speedFactor = 5;
+        function animate(){
+          requestAnimationFrame(animate);
+          controls.update();
+          const timeScale = parseFloat(document.getElementById("time-scale").value) * 0.05;
+          const orbitScale = 50;
+          const globalMultiplier = parseFloat(document.getElementById("semi-major").value);
+          Object.entries(planetsGlobal).forEach(([key, planet]) => {
+            const a = planet.data.semiMajorAxis * planet.data.semiMajorMultiplier * globalMultiplier * orbitScale;
+            const ecc = planet.data.eccentricity;
+            const b = a * Math.sqrt(1 - ecc ** 2);
+            const orbitalSpeed = timeScale * speedFactor / Math.sqrt(a ** 3);
+            planet.angle += orbitalSpeed;
+            if(planet.mesh){
+              planet.mesh.position.x = a * (Math.cos(planet.angle) - ecc);
+              planet.mesh.position.z = b * Math.sin(planet.angle);
+              if(planet.moons && planet.moons.length > 0){
+                planet.moons.forEach(m => {
+                  m.angle += orbitalSpeed * m.orbitSpeed;
+                  m.mesh.position.set(Math.cos(m.angle) * m.orbitRadius, 0, Math.sin(m.angle) * m.orbitRadius);
+                });
+              }
+            }
+          });
+          if(asteroidBelt){ asteroidBelt.rotation.y += 0.0005; }
+          composer.render();
+        }
+        animate();
+      }
+
+      // Update the orbit line when parameters change
+      function updateOrbitLine(planetKey) {
+        const planetObj = planetsGlobal[planetKey];
+        scene.remove(planetObj.orbitLine);
+        const orbitScale = 50;
+        const globalMultiplier = parseFloat(document.getElementById("semi-major").value);
+        const a = planetObj.data.semiMajorAxis * planetObj.data.semiMajorMultiplier * globalMultiplier * orbitScale;
+        const ecc = planetObj.data.eccentricity;
+        const b = a * Math.sqrt(1 - ecc ** 2);
+        const orbitPoints = [];
+        for(let i = 0; i <= 100; i++){
+          const theta = (i / 100) * Math.PI * 2;
+          orbitPoints.push(a * (Math.cos(theta) - ecc), 0, b * Math.sin(theta));
+        }
+        const orbitGeometry = new THREE.BufferGeometry();
+        orbitGeometry.setAttribute("position", new THREE.Float32BufferAttribute(orbitPoints, 3));
+        const orbitMaterial = new THREE.LineBasicMaterial({ color: 0x444444 });
+        const newOrbitLine = new THREE.Line(orbitGeometry, orbitMaterial);
+        newOrbitLine.frustumCulled = true;
+        newOrbitLine.matrixAutoUpdate = false;
+        scene.add(newOrbitLine);
+        planetObj.orbitLine = newOrbitLine;
+      }
+
+      // Show information panel for selected object
+      function showObjectInfo(userData) {
+        // Do not show info panel for asteroids on mobile
+        if(userData.type === "asteroid") return;
+        const infoPanel = document.getElementById("info-panel");
+        const nameEl = document.getElementById("selected-planet-name");
+        const iconEl = document.getElementById("selected-planet-icon");
+        const infoContent = document.getElementById("planet-info");
+        const adjustForm = document.getElementById("adjust-form");
+        let html = "";
+        if(userData.type === "planet"){
+          const planet = planetData[userData.key];
+          selectedPlanetKey = userData.key;
+          nameEl.textContent = planet.name;
+          iconEl.style.backgroundImage = `url('texture/${planet.name.toLowerCase()}.png')`;
+          html += `<p>${planet.description}</p>`;
+          html += `<p><strong>Semi-major Axis (default):</strong> ${planet.semiMajorAxis} AU</p>`;
+          html += `<p><strong>Eccentricity (default):</strong> ${planet.eccentricity}</p>`;
+          html += `<p><strong>Orbital Period:</strong> ${planet.orbitalPeriod} Earth days</p>`;
+          html += `<p><strong>Rotation Period:</strong> ${Math.abs(planet.rotationPeriod)} Earth days${planet.rotationPeriod < 0 ? " (retrograde)" : ""}</p>`;
+          if(moonsData[userData.key]){
+            html += `<p><strong>Moons:</strong> ${moonsData[userData.key].map(m => m.name).join(", ")}</p>`;
+          }
+          adjustForm.style.display = "block";
+          document.getElementById("adjust-eccentricity").value = planet.eccentricity;
+          document.getElementById("adjust-semi-major").value = 1;
+          document.getElementById("adjust-ecc-value").textContent = planet.eccentricity;
+          document.getElementById("adjust-semi-value").textContent = "1x";
+        } else if(userData.type === "moon"){
+          const parent = planetData[userData.parent];
+          nameEl.textContent = "Moon: " + userData.name + " of " + parent.name;
+          iconEl.style.backgroundImage = `url('texture/${userData.name.toLowerCase()}.png')`;
+          html += `<p>${userData.description || "Detailed information about this moon is not available."}</p>`;
+          adjustForm.style.display = "none";
+        } else if(userData.type === "sun"){
+          nameEl.textContent = sunData.name;
+          iconEl.style.backgroundImage = `url('texture/sun.png')`;
+          html += `<p>${sunData.description}</p>`;
+          adjustForm.style.display = "none";
+        }
+        infoContent.innerHTML = html;
+        infoPanel.classList.add("active");
+      }
+
+      // Event listeners for DOM content and UI controls
+      document.addEventListener("DOMContentLoaded", function(){
+        setTimeout(function(){
+          const splashScreen = document.getElementById("splash-screen");
+          splashScreen.style.opacity = "0";
+          setTimeout(function(){
+            splashScreen.style.display = "none";
+            preloadAsteroids(initSolarSystem);
+          }, 1500);
+        }, 2500);
+
+        document.getElementById("view-solar-system").addEventListener("click", function(){
+          document.getElementById("solar-system").style.display = "block";
+          document.getElementById("kepler-laws").style.display = "none";
+          document.getElementById("controls").style.display = "block";
+        });
+        document.getElementById("view-kepler-laws").addEventListener("click", function(){
+          document.getElementById("solar-system").style.display = "none";
+          document.getElementById("kepler-laws").style.display = "block";
+          document.getElementById("controls").style.display = "none";
+          initLawVisualizations();
+        });
+        document.querySelector(".close-btn").addEventListener("click", function(){
+          document.getElementById("info-panel").classList.remove("active");
+        });
+        document.getElementById("time-scale").addEventListener("input", function(){
+          document.getElementById("time-value").textContent = this.value + "x";
+        });
+        document.getElementById("eccentricity").addEventListener("input", function(){
+          document.getElementById("eccentricity-value").textContent = this.value;
+          Object.keys(planetsGlobal).forEach(key => {
+            planetsGlobal[key].data.eccentricity = parseFloat(this.value);
+            updateOrbitLine(key);
+          });
+        });
+        document.getElementById("semi-major").addEventListener("input", function(){
+          document.getElementById("semi-major-value").textContent = this.value + "x";
+          Object.keys(planetsGlobal).forEach(key => updateOrbitLine(key));
+        });
+        document.getElementById("adjust-eccentricity").addEventListener("input", function(){
+          if(selectedPlanetKey && planetsGlobal[selectedPlanetKey]){
+            const newEcc = parseFloat(this.value);
+            planetsGlobal[selectedPlanetKey].data.eccentricity = newEcc;
+            document.getElementById("adjust-ecc-value").textContent = newEcc;
+            updateOrbitLine(selectedPlanetKey);
+          }
+        });
+        document.getElementById("adjust-semi-major").addEventListener("input", function(){
+          if(selectedPlanetKey && planetsGlobal[selectedPlanetKey]){
+            const newMultiplier = parseFloat(this.value);
+            planetsGlobal[selectedPlanetKey].data.semiMajorMultiplier = newMultiplier;
+            document.getElementById("adjust-semi-value").textContent = newMultiplier + "x";
+            updateOrbitLine(selectedPlanetKey);
+          }
+        });
+        document.getElementById("reset-adjust").addEventListener("click", function(){
+          if(selectedPlanetKey && planetsGlobal[selectedPlanetKey]){
+            planetsGlobal[selectedPlanetKey].data.eccentricity = DEFAULT_ECCENTRICITY;
+            planetsGlobal[selectedPlanetKey].data.semiMajorMultiplier = 1;
+            document.getElementById("adjust-eccentricity").value = DEFAULT_ECCENTRICITY;
+            document.getElementById("adjust-semi-major").value = 1;
+            document.getElementById("adjust-ecc-value").textContent = DEFAULT_ECCENTRICITY;
+            document.getElementById("adjust-semi-value").textContent = "1x";
+            updateOrbitLine(selectedPlanetKey);
+            showObjectInfo({ type: "planet", key: selectedPlanetKey });
+          }
+        });
+        document.getElementById("reset-controls").addEventListener("click", function(){
+          document.getElementById("time-scale").value = DEFAULT_TIME_SCALE;
+          document.getElementById("time-value").textContent = DEFAULT_TIME_SCALE + "x";
+          document.getElementById("eccentricity").value = DEFAULT_ECCENTRICITY;
+          document.getElementById("eccentricity-value").textContent = DEFAULT_ECCENTRICITY;
+          document.getElementById("semi-major").value = DEFAULT_SEMI_MAJOR_MULTIPLIER;
+          document.getElementById("semi-major-value").textContent = DEFAULT_SEMI_MAJOR_MULTIPLIER + "x";
+          Object.keys(planetsGlobal).forEach(key => {
+            planetsGlobal[key].data.eccentricity = planetData[key].eccentricity;
+            planetsGlobal[key].data.semiMajorMultiplier = 1;
+            updateOrbitLine(key);
+          });
+        });
+      });
+
+      // --- Lesson Visualizations ---
+      let lawVisualizationsInitialized = false;
+      function initLawVisualizations(){
+        if(lawVisualizationsInitialized) return;
+        lawVisualizationsInitialized = true;
+        initNewtonViz();
+        initFirstLawViz();
+        initSecondLawViz();
+        initThirdLawViz();
+        initExampleViz();
+      }
+
+      function createMiniScene(containerId){
+        const container = document.getElementById(containerId);
+        const loaderEl = container.querySelector('.loading');
+        if(loaderEl) container.removeChild(loaderEl);
+        const width = container.clientWidth;
+        const height = Math.max(container.clientHeight, 250);
+        const miniRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        miniRenderer.setSize(width, height);
+        container.appendChild(miniRenderer.domElement);
+        const miniScene = new THREE.Scene();
+        const miniCamera = new THREE.PerspectiveCamera(50, width/height, 0.1, 1000);
+        miniCamera.position.set(0, 0, 10);
+        const miniControls = new OrbitControls(miniCamera, miniRenderer.domElement);
+        miniControls.enableDamping = true;
+        miniControls.dampingFactor = 0.05;
+        miniControls.minDistance = 2;
+        miniControls.maxDistance = 50;
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        miniScene.add(ambientLight);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight.position.set(10, 10, 10);
+        miniScene.add(directionalLight);
+        function onResize(){
+          const w = container.clientWidth;
+          const h = Math.max(container.clientHeight, 250);
+          miniCamera.aspect = w/h;
+          miniCamera.updateProjectionMatrix();
+          miniRenderer.setSize(w, h);
+        }
+        window.addEventListener('resize', onResize);
+        function animateMini(){
+          requestAnimationFrame(animateMini);
+          miniControls.update();
+          miniRenderer.render(miniScene, miniCamera);
+        }
+        animateMini();
+        return { miniScene, miniCamera, miniRenderer };
+      }
+
+      function createTextSprite(text){
+        const canvas = document.createElement('canvas');
+        canvas.width = 256;
+        canvas.height = 64;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = 'white';
+        ctx.font = '24px Arial';
+        ctx.fillText(text, 10, 40);
+        return new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(canvas) }));
+      }
+
+      // Newton's Law Visualization
+      function initNewtonViz(){
+        const { miniScene, miniRenderer } = createMiniScene("newton-law-viz");
+        const sphereGeom = new THREE.SphereGeometry(0.5, 32, 32);
+        const mat1 = new THREE.MeshStandardMaterial({ color: 0x00ccff });
+        const mat2 = new THREE.MeshStandardMaterial({ color: 0xffcc00 });
+        const mass1 = new THREE.Mesh(sphereGeom, mat1);
+        mass1.position.set(-2, 0, 0);
+        miniScene.add(mass1);
+        const mass2 = new THREE.Mesh(sphereGeom, mat2);
+        mass2.position.set(2, 0, 0);
+        miniScene.add(mass2);
+        const arrow = new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), new THREE.Vector3(-2, 0, 0), 4, 0xff0000);
+        miniScene.add(arrow);
+        const distanceSprite = createTextSprite("Distance: 4 units");
+        distanceSprite.scale.set(4, 1, 1);
+        distanceSprite.position.set(0, -1.5, 0);
+        miniScene.add(distanceSprite);
+        const forceSprite = createTextSprite("Force ∝ 1/r²");
+        forceSprite.scale.set(4, 1, 1);
+        forceSprite.position.set(0, 2.5, 0);
+        miniScene.add(forceSprite);
+        let freeze = false;
+        miniRenderer.domElement.style.cursor = "pointer";
+        miniRenderer.domElement.addEventListener("click", function(){
+          freeze = !freeze;
+          if(freeze){
+            const dist = mass1.position.distanceTo(mass2.position).toFixed(2);
+            const ctx = distanceSprite.material.map.image.getContext('2d');
+            ctx.clearRect(0, 0, 256, 64);
+            ctx.fillStyle = "white";
+            ctx.font = "24px Arial";
+            ctx.fillText("Distance: " + dist + " units", 10, 40);
+            distanceSprite.material.map.needsUpdate = true;
+          }
+        });
+      }
+
+      // Kepler's First Law Visualization
+      function initFirstLawViz(){
+        const { miniScene, miniRenderer } = createMiniScene("first-law-viz");
+        const starGeom = new THREE.SphereGeometry(0.4, 32, 32);
+        const starMat = new THREE.MeshStandardMaterial({ color: 0xffdd00 });
+        const star = new THREE.Mesh(starGeom, starMat);
+        star.position.set(-1, 0, 0);
+        miniScene.add(star);
+        const planetGeom = new THREE.SphereGeometry(0.2, 16, 16);
+        const planetMat = new THREE.MeshStandardMaterial({ color: 0x00aaff });
+        const planet = new THREE.Mesh(planetGeom, planetMat);
+        miniScene.add(planet);
+        const a = 2, e = 0.6, b = a * Math.sqrt(1 - e * e);
+        const points = [];
+        for(let i = 0; i <= 100; i++){
+          const theta = (i / 100) * Math.PI * 2;
+          points.push(new THREE.Vector3(a * (Math.cos(theta) - e), b * Math.sin(theta), 0));
+        }
+        const ellipse = new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), new THREE.LineBasicMaterial({ color: 0xffffff }));
+        miniScene.add(ellipse);
+        const paramsSprite = createTextSprite("a = 2, e = 0.6");
+        paramsSprite.scale.set(3, 1, 1);
+        paramsSprite.position.set(0, -2.5, 0);
+        miniScene.add(paramsSprite);
+        let angle = 0;
+        let freeze = false;
+        miniRenderer.domElement.style.cursor = "pointer";
+        miniRenderer.domElement.addEventListener("click", function(){
+          freeze = !freeze;
+          if(freeze){
+            const x = a * (Math.cos(angle) - e).toFixed(2);
+            const y = (b * Math.sin(angle)).toFixed(2);
+            const ctx = paramsSprite.material.map.image.getContext('2d');
+            ctx.clearRect(0, 0, 256, 64);
+            ctx.fillStyle = "white";
+            ctx.font = "24px Arial";
+            ctx.fillText(`a = 2, e = 0.6 | pos: (${x}, ${y})`, 10, 40);
+            paramsSprite.material.map.needsUpdate = true;
+          }
+        });
+        function animateOrbit(){
+          requestAnimationFrame(animateOrbit);
+          if(!freeze){ angle += 0.01; }
+          planet.position.set(a * (Math.cos(angle) - e), b * Math.sin(angle), 0);
+        }
+        animateOrbit();
+      }
+
+      // Kepler's Second Law Visualization
+      function initSecondLawViz(){
+        const { miniScene, miniRenderer } = createMiniScene("second-law-viz");
+        const starGeom = new THREE.SphereGeometry(0.4, 32, 32);
+        const starMat = new THREE.MeshStandardMaterial({ color: 0xffdd00 });
+        const star = new THREE.Mesh(starGeom, starMat);
+        miniScene.add(star);
+        const planetGeom = new THREE.SphereGeometry(0.2, 16, 16);
+        const planetMat = new THREE.MeshStandardMaterial({ color: 0x00aaff });
+        const planet = new THREE.Mesh(planetGeom, planetMat);
+        miniScene.add(planet);
+        const a = 3, e = 0.5, b = a * Math.sqrt(1 - e * e);
+        const sectorGeom = new THREE.BufferGeometry();
+        const sectorMat = new THREE.MeshBasicMaterial({ color: 0xff0000, transparent: true, opacity: 0.4, side: THREE.DoubleSide });
+        const sectorMesh = new THREE.Mesh(sectorGeom, sectorMat);
+        miniScene.add(sectorMesh);
+        const areaSprite = createTextSprite("Area: calculating...");
+        areaSprite.scale.set(3, 1, 1);
+        areaSprite.position.set(0, -3, 0);
+        miniScene.add(areaSprite);
+        let angle = 0;
+        let freeze = false;
+        let freezeAngle = 0;
+        miniRenderer.domElement.style.cursor = "pointer";
+        miniRenderer.domElement.addEventListener("click", function(){
+          freeze = !freeze;
+          if(freeze){ freezeAngle = angle; }
+        });
+        function updateSector(){
+          const segments = 30;
+          let vertices = [0, 0, 0];
+          for(let i = 0; i <= segments; i++){
+            const t = freeze ? (freezeAngle * i / segments) : (angle * i / segments);
+            vertices.push(a * (Math.cos(t) - e), b * Math.sin(t), 0);
+          }
+          const vertexArray = new Float32Array(vertices);
+          sectorGeom.setAttribute('position', new THREE.BufferAttribute(vertexArray, 3));
+          sectorGeom.computeVertexNormals();
+          sectorGeom.setDrawRange(0, vertices.length / 3);
+          if(freeze){
+            const frac = freezeAngle / (2 * Math.PI);
+            const area = frac * Math.PI * a * b;
+            const ctx = areaSprite.material.map.image.getContext('2d');
+            ctx.clearRect(0, 0, 256, 64);
+            ctx.fillStyle = "white";
+            ctx.font = "24px Arial";
+            ctx.fillText("Area ≈ " + area.toFixed(2) + " sq. units", 10, 40);
+            areaSprite.material.map.needsUpdate = true;
+          }
+        }
+        function animateOrbit(){
+          requestAnimationFrame(animateOrbit);
+          if(!freeze){ angle += 0.02; }
+          planet.position.set(a * (Math.cos(angle) - e), b * Math.sin(angle), 0);
+          updateSector();
+        }
+        animateOrbit();
+      }
+
+      // Kepler's Third Law Visualization
+      function initThirdLawViz(){
+        const { miniScene, miniRenderer } = createMiniScene("third-law-viz");
+        const starGeom = new THREE.SphereGeometry(0.4, 32, 32);
+        const starMat = new THREE.MeshStandardMaterial({ color: 0xffdd00 });
+        const star = new THREE.Mesh(starGeom, starMat);
+        miniScene.add(star);
+        const planet1 = new THREE.Mesh(new THREE.SphereGeometry(0.2, 16, 16), new THREE.MeshStandardMaterial({ color: 0x00aaff }));
+        const planet2 = new THREE.Mesh(new THREE.SphereGeometry(0.2, 16, 16), new THREE.MeshStandardMaterial({ color: 0xff88aa }));
+        miniScene.add(planet1);
+        miniScene.add(planet2);
+        function makeCircle(r){
+          const pts = [];
+          for(let i = 0; i < 64; i++){
+            const theta = (i / 64) * Math.PI * 2;
+            pts.push(new THREE.Vector3(r * Math.cos(theta), r * Math.sin(theta), 0));
+          }
+          pts.push(new THREE.Vector3(r, 0, 0));
+          return new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color: 0xffffff }));
+        }
+        const orbit1Radius = 2, orbit2Radius = 3.5;
+        miniScene.add(makeCircle(orbit1Radius));
+        miniScene.add(makeCircle(orbit2Radius));
+        let angle1 = 0, angle2 = 0;
+        const ratio = Math.pow((orbit2Radius / orbit1Radius), 1.5);
+        const speed1 = 0.03, speed2 = speed1 / ratio;
+        const ratioSprite = createTextSprite("T² ∝ a³");
+        ratioSprite.scale.set(3, 1, 1);
+        ratioSprite.position.set(0, -3, 0);
+        miniScene.add(ratioSprite);
+        let freeze = false;
+        miniRenderer.domElement.style.cursor = "pointer";
+        miniRenderer.domElement.addEventListener("click", function(){
+          freeze = !freeze;
+          if(freeze){
+            const periodRatio = (1 / speed2 / (1 / speed1)).toFixed(2);
+            const ctx = ratioSprite.material.map.image.getContext('2d');
+            ctx.clearRect(0, 0, 256, 64);
+            ctx.fillStyle = "white";
+            ctx.font = "24px Arial";
+            ctx.fillText("Period Ratio: " + periodRatio, 10, 40);
+            ratioSprite.material.map.needsUpdate = true;
+          }
+        });
+        function animateOrbit(){
+          requestAnimationFrame(animateOrbit);
+          if(!freeze){
+            angle1 += speed1;
+            angle2 += speed2;
+          }
+          planet1.position.set(orbit1Radius * Math.cos(angle1), orbit1Radius * Math.sin(angle1), 0);
+          planet2.position.set(orbit2Radius * Math.cos(angle2), orbit2Radius * Math.sin(angle2), 0);
+        }
+        animateOrbit();
+      }
+
+      // Mercury Example Visualization
+      function initExampleViz(){
+        const { miniScene, miniRenderer } = createMiniScene("kepler-example-viz");
+        const star = new THREE.Mesh(new THREE.SphereGeometry(0.4, 32, 32), new THREE.MeshStandardMaterial({ color: 0xffdd00 }));
+        miniScene.add(star);
+        const mercury = new THREE.Mesh(new THREE.SphereGeometry(0.2, 16, 16), new THREE.MeshStandardMaterial({ color: 0xb1b1b1 }));
+        miniScene.add(mercury);
+        const rMercury = 2;
+        // Helper for circle outline
+        function makeCircleLine(r, color){
+          const pts = [];
+          for(let i = 0; i < 64; i++){
+            const theta = (i / 64) * Math.PI * 2;
+            pts.push(new THREE.Vector3(r * Math.cos(theta), r * Math.sin(theta), 0));
+          }
+          pts.push(new THREE.Vector3(r, 0, 0));
+          return new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color }));
+        }
+        miniScene.add(makeCircleLine(rMercury, 0xaaaaaa));
+        const labelSprite = createTextSprite("Mercury: T ≈ 0.253 yrs");
+        labelSprite.scale.set(4, 1, 1);
+        labelSprite.position.set(0, 2.5, 0);
+        miniScene.add(labelSprite);
+        let angle = 0;
+        let freeze = false;
+        miniRenderer.domElement.style.cursor = "pointer";
+        miniRenderer.domElement.addEventListener("click", function(){
+          freeze = !freeze;
+          if(freeze){
+            const ctx = labelSprite.material.map.image.getContext('2d');
+            ctx.clearRect(0, 0, 256, 64);
+            ctx.fillStyle = "white";
+            ctx.font = "24px Arial";
+            ctx.fillText("Mercury: T ≈ 0.253 yrs", 10, 40);
+            labelSprite.material.map.needsUpdate = true;
+          }
+        });
+        function animateMercury(){
+          requestAnimationFrame(animateMercury);
+          if(!freeze){ angle += 0.08; }
+          mercury.position.set(rMercury * Math.cos(angle), rMercury * Math.sin(angle), 0);
+        }
+        animateMercury();
+      }
+    </script>
+  </body>
+</html>
