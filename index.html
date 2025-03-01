@@ -555,6 +555,14 @@
         controls.dampingFactor = 0.05;
         controls.minDistance = 1;
         controls.maxDistance = 10000;
+        // Set constant rotate speed on desktop
+        controls.rotateSpeed = 1.0;
+        // If mobile, disable OrbitControls for zoom/pan/rotate so that our custom handlers work
+        if ('ontouchstart' in window) {
+          controls.enableZoom = false;
+          controls.enablePan = false;
+          controls.enableRotate = false;
+        }
         camera.position.set(0, 50, 100);
         composer = new EffectComposer(renderer);
         composer.addPass(new RenderPass(scene, camera));
@@ -686,19 +694,88 @@
           detectInteraction(event.clientX, event.clientY);
         });
 
-        // Touch event (for mobile)
-        document.getElementById("solar-system").addEventListener("touchend", function(event){
-          event.preventDefault();
-          if(event.changedTouches.length > 0){
-            const touch = event.changedTouches[0];
-            detectInteraction(touch.clientX, touch.clientY);
+        // --- Custom Mobile Touch Controls ---
+        const solarSystemElem = document.getElementById("solar-system");
+        let isTouching = false;
+        let lastTouchX = 0, lastTouchY = 0;
+        let lastTouchDistance = null;
+
+        solarSystemElem.addEventListener("touchstart", function(event) {
+          if(event.touches.length === 1){
+            isTouching = true;
+            lastTouchX = event.touches[0].clientX;
+            lastTouchY = event.touches[0].clientY;
+          } else if(event.touches.length === 2){
+            isTouching = false;
+            lastTouchDistance = getDistance(event.touches[0], event.touches[1]);
           }
+          event.preventDefault();
+        }, {passive: false});
+
+        solarSystemElem.addEventListener("touchmove", function(event) {
+          if(event.touches.length === 1 && isTouching){
+            let touch = event.touches[0];
+            let deltaX = touch.clientX - lastTouchX;
+            let deltaY = touch.clientY - lastTouchY;
+            const panFactor = 0.1;
+            camera.position.x -= deltaX * panFactor;
+            camera.position.z -= deltaY * panFactor;
+            lastTouchX = touch.clientX;
+            lastTouchY = touch.clientY;
+          } else if(event.touches.length === 2){
+            let currentDistance = getDistance(event.touches[0], event.touches[1]);
+            if(lastTouchDistance){
+              let zoomDelta = currentDistance - lastTouchDistance;
+              const zoomFactor = 0.05;
+              camera.position.z -= zoomDelta * zoomFactor;
+            }
+            lastTouchDistance = currentDistance;
+          }
+          event.preventDefault();
+        }, {passive: false});
+
+        solarSystemElem.addEventListener("touchend", function(event) {
+          if(event.touches.length === 0) {
+            // If this was a tap, show info panel (ignoring asteroids)
+            if(event.changedTouches.length === 1){
+              const touch = event.changedTouches[0];
+              detectInteraction(touch.clientX, touch.clientY);
+            }
+            isTouching = false;
+            lastTouchDistance = null;
+          }
+          event.preventDefault();
+        }, {passive: false});
+
+        function getDistance(t1, t2) {
+          let dx = t2.clientX - t1.clientX;
+          let dy = t2.clientY - t1.clientY;
+          return Math.sqrt(dx * dx + dy * dy);
+        }
+
+        // --- WASD Continuous Movement ---
+        // Object to track keys that are currently pressed
+        const keysPressed = {};
+        document.addEventListener("keydown", function(event) {
+          keysPressed[event.key.toLowerCase()] = true;
+        });
+        document.addEventListener("keyup", function(event) {
+          keysPressed[event.key.toLowerCase()] = false;
         });
 
         const speedFactor = 5;
         function animate(){
           requestAnimationFrame(animate);
+          // Update OrbitControls
           controls.update();
+
+          // --- Continuous WASD Movement ---
+          const moveSpeed = 0.5; // adjust move speed as needed
+          if(keysPressed['w']) { camera.position.z -= moveSpeed; }
+          if(keysPressed['s']) { camera.position.z += moveSpeed; }
+          if(keysPressed['a']) { camera.position.x -= moveSpeed; }
+          if(keysPressed['d']) { camera.position.x += moveSpeed; }
+
           const timeScale = parseFloat(document.getElementById("time-scale").value) * 0.05;
           const orbitScale = 50;
           const globalMultiplier = parseFloat(document.getElementById("semi-major").value);
