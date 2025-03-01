@@ -152,7 +152,7 @@
       }
       .planet-title { font-size: 24px; margin: 0; }
       .info-content p { margin-bottom: 10px; line-height: 1.6; }
-      /* Adjust Parameters Form */
+      /* Adjust Parameters Form & Reset Buttons */
       .adjust-parameters {
         margin-top: 20px;
         padding-top: 10px;
@@ -160,7 +160,8 @@
       }
       .adjust-parameters label { font-size: 14px; color: #ccc; }
       .adjust-parameters input[type="range"] { width: 100%; margin: 5px 0 10px; }
-      .adjust-parameters button {
+      .adjust-parameters button,
+      #reset-controls {
         background: #ff5e00;
         border: none;
         padding: 8px 12px;
@@ -169,21 +170,24 @@
         cursor: pointer;
         transition: background 0.3s;
       }
-      .adjust-parameters button:hover { background: #ff9500; }
+      .adjust-parameters button:hover,
+      #reset-controls:hover { background: #ff9500; }
       /* Navigation */
       nav {
         position: absolute;
         top: 20px;
         left: 20px;
-        z-index: 10;
+        z-index: 20;
       }
-      /* When in Lessons view, style nav at absolute top with background */
+      /* Lessons Navbar Fixed Header */
       nav.lessons {
+        position: fixed;
         top: 0;
         left: 0;
         width: 100%;
         background: rgba(0, 10, 30, 0.9);
         padding: 10px;
+        z-index: 1000;
       }
       .nav-button {
         background: rgba(0, 10, 30, 0.7);
@@ -197,17 +201,17 @@
         transition: background 0.3s;
       }
       .nav-button:hover { background: rgba(0, 20, 60, 0.8); }
-      /* Kepler's Laws Section */
+      /* Lessons Section Content (push below fixed header) */
       #kepler-laws {
         display: none;
         position: absolute;
-        top: 0;
+        top: 60px;
         left: 0;
         width: 100vw;
-        height: 100vh;
+        height: calc(100vh - 60px);
         background: #050e1a;
         z-index: 5;
-        padding: 80px 20px 20px;
+        padding: 20px;
         overflow-y: auto;
       }
       .law-container {
@@ -252,9 +256,14 @@
       @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
       /* Responsive adjustments */
       @media (max-width: 768px) {
-        #controls, nav {
+        #controls {
           left: 10px;
-          bottom: 10px;
+          right: 10px;
+          bottom: 20px;
+          width: auto;
+        }
+        nav {
+          left: 10px;
           padding: 10px;
         }
         #info-panel {
@@ -905,7 +914,8 @@
           document.getElementById("solar-system").style.display = "none";
           document.getElementById("kepler-laws").style.display = "block";
           document.getElementById("controls").style.display = "none";
-          // For Lessons, add the 'lessons' class to nav so that it sits at top with a background
+          // For Lessons, add the 'lessons' class to nav so that it sits fixed at the top with background,
+          // and lessons content is pushed down via top margin.
           document.getElementById("nav").classList.add("lessons");
           document.getElementById("nav").style.display = "block";
           initLawVisualizations();
