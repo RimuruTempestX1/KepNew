@@ -1187,7 +1187,7 @@
               const right = new THREE.Vector3();
               camera.getWorldDirection(panOffset);
               right.crossVectors(camera.up, panOffset).normalize();
-              right.multiplyScalar(-dx * mobilePanSpeed);
+              right.multiplyScalar(dx * mobilePanSpeed);
               const forward = new THREE.Vector3();
               camera.getWorldDirection(forward)
                 .normalize()
@@ -1264,7 +1264,7 @@
             <div class="instructions-panel">
               <h3>Mobile Controls</h3>
               <ul>
-                <li>One finger: Pan (swipe left to move right, right to move left; vertical is normal)</li>
+                <li>One finger: Pan (swipe to move)</li>
                 <li>Two fingers: Zoom in/out</li>
                 <li>Quick tap: Select object</li>
               </ul>
