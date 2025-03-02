@@ -927,41 +927,62 @@
           event.preventDefault();
         }, {passive: false});
 
+        // Helper: perform panning (mimicking right-click drag)
+        function pan(deltaX, deltaY) {
+          // Compute how much to pan in world space based on the camera's distance
+          const offset = new THREE.Vector3();
+          offset.copy(camera.position).sub(controls.target);
+          const targetDistance = offset.length();
+        
+          // Get dimensions of the renderer's DOM element
+          const element = renderer.domElement;
+          const panX = (2 * deltaX * targetDistance) / element.clientWidth;
+          const panY = (2 * deltaY * targetDistance) / element.clientHeight;
+        
+          // Get camera's right and up directions
+          const panOffset = new THREE.Vector3();
+          {
+            const te = camera.matrix.elements;
+            // Right vector (X column)
+            const right = new THREE.Vector3(te[0], te[1], te[2]);
+            // Up vector (Y column)
+            const up = new THREE.Vector3(te[4], te[5], te[6]);
+            // Invert the movement so that dragging right pans left, etc.
+            panOffset.addScaledVector(right, -panX);
+            panOffset.addScaledVector(up, -panY);
+          }
+          
+          // Update camera position and target
+          camera.position.add(panOffset);
+          controls.target.add(panOffset);
+        }
+        
+        // Touchmove event handler – one-finger pan mimics right-click drag:
         solarSystemElem.addEventListener("touchmove", function(event) {
           touchMoveCount++;
-          // One finger: emulate right-click panning (panLeft & panUp)
+          // One finger: simulate right-click drag pan.
           if (event.touches.length === 1 && isTouching) {
             const touch = event.touches[0];
-            // Compute change in touch position.
             const deltaX = touch.clientX - lastTouchX;
             const deltaY = touch.clientY - lastTouchY;
-            // Here, we invert the movement so that a swipe up pans the view downward,
-            // and a swipe right pans the view to the left.
-            const panSpeed = 0.5; // Adjust this factor to suit your simulation
-            controls.panLeft(-deltaX * panSpeed);
-            controls.panUp(-deltaY * panSpeed);
-            controls.update();
+            // Call our pan helper.
+            pan(deltaX, deltaY);
             lastTouchX = touch.clientX;
             lastTouchY = touch.clientY;
           }
-          // Two fingers: improve pinch-to-zoom using OrbitControls’ dolly functions.
+          // Two fingers: improved pinch-to-zoom using a scale ratio.
           else if (event.touches.length === 2) {
             const currentDistance = getDistance(event.touches[0], event.touches[1]);
             if (lastTouchDistance) {
-              // Calculate a zoom factor: if the current distance is less than the last,
-              // then the user is pinching (zooming in), otherwise zooming out.
-              const zoomFactor = currentDistance / lastTouchDistance;
-              if (zoomFactor < 1) {
-                controls.dollyIn(1 / zoomFactor);
-              } else {
-                controls.dollyOut(zoomFactor);
-              }
-              controls.update();
+              const scale = currentDistance / lastTouchDistance;
+              let newZ = camera.position.z / scale;
+              newZ = Math.max(controls.minDistance, Math.min(controls.maxDistance, newZ));
+              camera.position.z = newZ;
             }
             lastTouchDistance = currentDistance;
           }
           event.preventDefault();
-        }, {passive: false});
+        }, { passive: false });
 
         solarSystemElem.addEventListener("touchend", function(event) {
           const touchDuration = Date.now() - touchStartTime;
