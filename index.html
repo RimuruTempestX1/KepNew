@@ -712,57 +712,83 @@
         });
 
         // --- Custom Mobile Touch Controls ---
-        const solarSystemElem = document.getElementById("solar-system");
-        let isTouching = false;
-        let lastTouchX = 0, lastTouchY = 0;
-        let lastTouchDistance = null;
+        // --- Better Mobile Touch Controls ---
+const solarSystemElem = document.getElementById("solar-system");
+let touchStartTime = 0;
+let isTouching = false;
+let lastTouchX = 0, lastTouchY = 0;
+let lastTouchDistance = null;
+let touchMoveCount = 0;
 
-        solarSystemElem.addEventListener("touchstart", function(event) {
-          if(event.touches.length === 1){
-            isTouching = true;
-            lastTouchX = event.touches[0].clientX;
-            lastTouchY = event.touches[0].clientY;
-          } else if(event.touches.length === 2){
-            isTouching = false;
-            lastTouchDistance = getDistance(event.touches[0], event.touches[1]);
-          }
-          event.preventDefault();
-        }, {passive: false});
+solarSystemElem.addEventListener("touchstart", function(event) {
+  touchStartTime = Date.now();
+  touchMoveCount = 0;
+  
+  if(event.touches.length === 1){
+    isTouching = true;
+    lastTouchX = event.touches[0].clientX;
+    lastTouchY = event.touches[0].clientY;
+  } else if(event.touches.length === 2){
+    isTouching = false;
+    lastTouchDistance = getDistance(event.touches[0], event.touches[1]);
+  }
+  event.preventDefault();
+}, {passive: false});
 
-        solarSystemElem.addEventListener("touchmove", function(event) {
-          if(event.touches.length === 1 && isTouching){
-            let touch = event.touches[0];
-            let deltaX = touch.clientX - lastTouchX;
-            let deltaY = touch.clientY - lastTouchY;
-            const panFactor = 0.1;
-            camera.position.x -= deltaX * panFactor;
-            camera.position.z -= deltaY * panFactor;
-            lastTouchX = touch.clientX;
-            lastTouchY = touch.clientY;
-          } else if(event.touches.length === 2){
-            let currentDistance = getDistance(event.touches[0], event.touches[1]);
-            if(lastTouchDistance){
-              let zoomDelta = currentDistance - lastTouchDistance;
-              const zoomFactor = 0.05;
-              camera.position.z -= zoomDelta * zoomFactor;
-            }
-            lastTouchDistance = currentDistance;
-          }
-          event.preventDefault();
-        }, {passive: false});
+solarSystemElem.addEventListener("touchmove", function(event) {
+  touchMoveCount++;
+  
+  if(event.touches.length === 1 && isTouching){
+    let touch = event.touches[0];
+    let deltaX = touch.clientX - lastTouchX;
+    let deltaY = touch.clientY - lastTouchY;
+    
+    // Adjust pan factor based on camera distance for more intuitive control
+    const panFactor = 0.1 * (camera.position.z / 100);
+    
+    // Only pan if we've moved enough to consider it intentional
+    if(Math.abs(deltaX) > 2 || Math.abs(deltaY) > 2) {
+      camera.position.x -= deltaX * panFactor;
+      camera.position.y += deltaY * panFactor * 0.5; // Add some vertical movement too
+    }
+    
+    lastTouchX = touch.clientX;
+    lastTouchY = touch.clientY;
+  } else if(event.touches.length === 2){
+    let currentDistance = getDistance(event.touches[0], event.touches[1]);
+    if(lastTouchDistance){
+      let zoomDelta = currentDistance - lastTouchDistance;
+      
+      // Make zoom more responsive and smooth
+      const zoomFactor = 0.1;
+      const minDistance = controls.minDistance;
+      const maxDistance = controls.maxDistance;
+      
+      // Apply zoom to camera position
+      let newZ = camera.position.z - zoomDelta * zoomFactor;
+      // Clamp to min/max distances
+      newZ = Math.max(minDistance, Math.min(maxDistance, newZ));
+      camera.position.z = newZ;
+    }
+    lastTouchDistance = currentDistance;
+  }
+  event.preventDefault();
+}, {passive: false});
 
-        solarSystemElem.addEventListener("touchend", function(event) {
-          if(event.touches.length === 0) {
-            // If this was a tap, show info panel (ignoring asteroids)
-            if(event.changedTouches.length === 1){
-              const touch = event.changedTouches[0];
-              detectInteraction(touch.clientX, touch.clientY);
-            }
-            isTouching = false;
-            lastTouchDistance = null;
-          }
-          event.preventDefault();
-        }, {passive: false});
+solarSystemElem.addEventListener("touchend", function(event) {
+  const touchDuration = Date.now() - touchStartTime;
+  
+  if(event.touches.length === 0) {
+    // Only consider it a tap if it was brief and didn't move much
+    if(touchDuration < 300 && touchMoveCount < 5){
+      const touch = event.changedTouches[0];
+      detectInteraction(touch.clientX, touch.clientY);
+    }
+    isTouching = false;
+    lastTouchDistance = null;
+  }
+  event.preventDefault();
+}, {passive: false});
 
         function getDistance(t1, t2) {
           let dx = t2.clientX - t1.clientX;
@@ -844,52 +870,58 @@
       }
 
       // Show information panel for selected object
-      function showObjectInfo(userData) {
-        // Do not show info panel for asteroids
-        if(userData.type === "asteroid") return;
-        const infoPanel = document.getElementById("info-panel");
-        const nameEl = document.getElementById("selected-planet-name");
-        const iconEl = document.getElementById("selected-planet-icon");
-        const infoContent = document.getElementById("planet-info");
-        const adjustForm = document.getElementById("adjust-form");
-        let html = "";
-        if(userData.type === "planet"){
-          const planet = planetData[userData.key];
-          selectedPlanetKey = userData.key;
-          nameEl.textContent = planet.name;
-          iconEl.style.backgroundImage = `url('texture/${planet.name.toLowerCase()}.png')`;
-          html += `<p>${planet.description}</p>`;
-          html += `<p><strong>Semi-major Axis (default):</strong> ${planet.semiMajorAxis} AU</p>`;
-          html += `<p><strong>Eccentricity (default):</strong> ${planet.eccentricity}</p>`;
-          html += `<p><strong>Orbital Period:</strong> ${planet.orbitalPeriod} Earth days</p>`;
-          html += `<p><strong>Rotation Period:</strong> ${Math.abs(planet.rotationPeriod)} Earth days${planet.rotationPeriod < 0 ? " (retrograde)" : ""}</p>`;
-          if(moonsData[userData.key]){
-            html += `<p><strong>Moons:</strong> ${moonsData[userData.key].map(m => m.name).join(", ")}</p>`;
-          }
-          adjustForm.style.display = "block";
-          document.getElementById("adjust-eccentricity").value = planet.eccentricity;
-          document.getElementById("adjust-semi-major").value = 1;
-          document.getElementById("adjust-ecc-value").textContent = planet.eccentricity;
-          document.getElementById("adjust-semi-value").textContent = "1x";
-          // On mobile, hide the nav when info panel is active in Solar System view
-          if(window.innerWidth < 768) {
-            document.getElementById("nav").style.display = "none";
-          }
-        } else if(userData.type === "moon"){
-          const parent = planetData[userData.parent];
-          nameEl.textContent = "Moon: " + userData.name + " of " + parent.name;
-          iconEl.style.backgroundImage = `url('texture/${userData.name.toLowerCase()}.png')`;
-          html += `<p>${userData.description || "Detailed information about this moon is not available."}</p>`;
-          adjustForm.style.display = "none";
-        } else if(userData.type === "sun"){
-          nameEl.textContent = sunData.name;
-          iconEl.style.backgroundImage = `url('texture/sun.png')`;
-          html += `<p>${sunData.description}</p>`;
-          adjustForm.style.display = "none";
-        }
-        infoContent.innerHTML = html;
-        infoPanel.classList.add("active");
-      }
+function showObjectInfo(userData) {
+  // Do not show info panel for asteroids
+  if(userData.type === "asteroid") return;
+  
+  const infoPanel = document.getElementById("info-panel");
+  const nameEl = document.getElementById("selected-planet-name");
+  const iconEl = document.getElementById("selected-planet-icon");
+  const infoContent = document.getElementById("planet-info");
+  const adjustForm = document.getElementById("adjust-form");
+  const nav = document.getElementById("nav");
+  let html = "";
+  
+  // On mobile, always hide the nav when info panel is active in Solar System view
+  if(window.innerWidth < 768) {
+    nav.style.display = "none";
+    nav.classList.add("hidden-by-info-panel");
+  }
+  
+  if(userData.type === "planet"){
+    const planet = planetData[userData.key];
+    selectedPlanetKey = userData.key;
+    nameEl.textContent = planet.name;
+    iconEl.style.backgroundImage = `url('texture/${planet.name.toLowerCase()}.png')`;
+    html += `<p>${planet.description}</p>`;
+    html += `<p><strong>Semi-major Axis (default):</strong> ${planet.semiMajorAxis} AU</p>`;
+    html += `<p><strong>Eccentricity (default):</strong> ${planet.eccentricity}</p>`;
+    html += `<p><strong>Orbital Period:</strong> ${planet.orbitalPeriod} Earth days</p>`;
+    html += `<p><strong>Rotation Period:</strong> ${Math.abs(planet.rotationPeriod)} Earth days${planet.rotationPeriod < 0 ? " (retrograde)" : ""}</p>`;
+    if(moonsData[userData.key]){
+      html += `<p><strong>Moons:</strong> ${moonsData[userData.key].map(m => m.name).join(", ")}</p>`;
+    }
+    adjustForm.style.display = "block";
+    document.getElementById("adjust-eccentricity").value = planet.eccentricity;
+    document.getElementById("adjust-semi-major").value = 1;
+    document.getElementById("adjust-ecc-value").textContent = planet.eccentricity;
+    document.getElementById("adjust-semi-value").textContent = "1x";
+  } else if(userData.type === "moon"){
+    const parent = planetData[userData.parent];
+    nameEl.textContent = "Moon: " + userData.name + " of " + parent.name;
+    iconEl.style.backgroundImage = `url('texture/${userData.name.toLowerCase()}.png')`;
+    html += `<p>${userData.description || "Detailed information about this moon is not available."}</p>`;
+    adjustForm.style.display = "none";
+  } else if(userData.type === "sun"){
+    nameEl.textContent = sunData.name;
+    iconEl.style.backgroundImage = `url('texture/sun.png')`;
+    html += `<p>${sunData.description}</p>`;
+    adjustForm.style.display = "none";
+  }
+  
+  infoContent.innerHTML = html;
+  infoPanel.classList.add("active");
+}
 
       // Event listeners for DOM content and UI controls
       document.addEventListener("DOMContentLoaded", function(){
@@ -920,13 +952,17 @@
           document.getElementById("nav").style.display = "block";
           initLawVisualizations();
         });
-        document.querySelector(".close-btn").addEventListener("click", function(){
-          document.getElementById("info-panel").classList.remove("active");
-          // When closing info panel on mobile in Solar System view, re-show nav
-          if(window.innerWidth < 768) {
-            document.getElementById("nav").style.display = "block";
-          }
-        });
+// Improved close button handler to properly restore navbar
+document.querySelector(".close-btn").addEventListener("click", function(){
+  document.getElementById("info-panel").classList.remove("active");
+  
+  // When closing info panel on mobile in Solar System view, re-show nav
+  const nav = document.getElementById("nav");
+  if(nav.classList.contains("hidden-by-info-panel")) {
+    nav.style.display = "block";
+    nav.classList.remove("hidden-by-info-panel");
+  }
+});
         document.getElementById("time-scale").addEventListener("input", function(){
           document.getElementById("time-value").textContent = this.value + "x";
         });
