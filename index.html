@@ -47,12 +47,12 @@
         width: 100vw; height: 100vh; position: absolute; top: 0; left: 0;
         touch-action: manipulation; -webkit-tap-highlight-color: transparent;
       }
-      /* Controls & Panels */
       #controls { position: absolute; bottom: 10px; left: 10px; background: rgba(0,10,30,0.7); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-radius: 15px; padding: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); max-height: 80vh; overflow-y: auto; z-index: 10; width: 300px; }
       #close-controls { position: absolute; top: 10px; right: 10px; background: transparent; border: none; font-size: 20px; color: #fff; cursor: pointer; }
-      #toggle-controls { display: block; position: fixed; bottom: 10px; right: 10px; z-index: 11; background: #ff5e00; border: none; padding: 10px 15px; color: #fff; border-radius: 8px; cursor: pointer; transition: background 0.3s; font-size: 14px; }
+      #toggle-controls { display: none; position: fixed; bottom: 10px; right: 10px; z-index: 11; background: #ff5e00; border: none; padding: 10px 15px; color: #fff; border-radius: 8px; cursor: pointer; transition: background 0.3s; font-size: 14px; }
       #toggle-controls:hover { background: #ff9500; }
-      #info-panel {
+      #info-panel { 
+        display: none;
         position: absolute; top: 60px; right: 10px; width: calc(100% - 20px);
         max-height: 70vh; overflow-y: auto; background: rgba(0,10,30,0.7);
         backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
@@ -60,12 +60,47 @@
         border: 1px solid rgba(255,255,255,0.1); transform: translateX(100%);
         transition: transform 0.4s ease; z-index: 30;
       }
-      #info-panel.active { transform: translateX(0); }
+      /* When active, show the info panel */
+      #info-panel.active { display: block; transform: translateX(0); }
       #info-panel .close-btn { position: absolute; top: 10px; right: 10px; font-size: 24px; border: none; background: transparent; color: white; cursor: pointer; z-index: 31; }
-      .info-header { display: flex; align-items: center; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+      .info-header { display: flex; align-items: center; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); }
       .planet-icon { width: 40px; height: 40px; border-radius: 50%; margin-right: 12px; background-size: cover; background-position: center; object-fit: cover; overflow: hidden; }
       .planet-title { font-size: 20px; margin: 0; }
+      .info-content { margin-top: 10px; }
       .info-content p { margin-bottom: 10px; line-height: 1.5; font-size: 14px; }
+      .adjust-panel {
+        margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.2);
+      }
+      .adjust-panel h3 {
+        font-size: 16px; margin-bottom: 10px; text-align: center;
+      }
+      .adjust-panel .input-group {
+        margin-bottom: 10px;
+      }
+      .adjust-panel label {
+        font-size: 13px; color: #ccc; display: block; margin-bottom: 4px;
+      }
+      .adjust-panel input[type="range"] {
+        width: 100%; background: rgba(255,255,255,0.1); height: 5px; border-radius: 5px; -webkit-appearance: none; appearance: none;
+      }
+      .adjust-panel input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none; width: 18px; height: 18px; background: #ff5e00; border-radius: 50%; cursor: pointer;
+      }
+      .adjust-panel input[type="range"]::-moz-range-thumb {
+        width: 18px; height: 18px; background: #ff5e00; border-radius: 50%; cursor: pointer; border: none;
+      }
+      .adjust-panel .value-display {
+        font-size: 13px; color: #ccc; margin-top: 2px;
+      }
+      .adjust-panel .button-group {
+        display: flex; gap: 10px; margin-top: 10px;
+      }
+      .adjust-panel .button-group button {
+        flex: 1; background: #ff5e00; border: none; padding: 10px; color: #fff; border-radius: 8px; cursor: pointer; transition: background 0.3s;
+        font-size: 14px;
+      }
+      .adjust-panel .button-group button:hover { background: #ff9500; }
+      /* Controls panel */
       #controls .control-group { margin-bottom: 15px; display: flex; flex-direction: column; gap: 5px; }
       #controls .control-label { font-size: 13px; color: #aaa; }
       #controls input[type="range"] {
@@ -77,20 +112,20 @@
       #controls input[type="range"]::-moz-range-thumb {
         width: 20px; height: 20px; background: #ff5e00; border-radius: 50%; cursor: pointer; border: none;
       }
-      .adjust-parameters button, #reset-controls {
-        background: #ff5e00; border: none; padding: 10px 15px; color: #fff;
-        border-radius: 8px; cursor: pointer; transition: background 0.3s;
-        font-size: 14px; min-height: 44px; width: 100%; margin-top: 5px;
+      /* New Reset Controls Button styling to match Reset Adjustments design */
+      #reset-controls {
+        background: #ff5e00;
+        border: none;
+        padding: 10px;
+        color: #fff;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background 0.3s;
+        font-size: 14px;
       }
-      .adjust-parameters button:hover, #reset-controls:hover { background: #ff9500; }
-      /* New button group for info-panel adjustments */
-      .adjust-parameters .button-group {
-        display: flex;
-        gap: 10px;
-      }
-      .adjust-parameters .button-group button {
-        flex: 1;
-      }
+      #reset-controls:hover { background: #ff9500; }
+      .nav-button, #controls, #info-panel, .control-label { -webkit-user-select: none; user-select: none; }
+      /* Navigation */
       nav { position: absolute; top: 10px; left: 10px; right: 10px; z-index: 20; display: flex; flex-wrap: wrap; gap: 6px; }
       nav.lessons {
         position: fixed; top: 0; left: 0; width: 100%; background: rgba(0,10,30,0.9);
@@ -111,13 +146,13 @@
       .law-viz { flex: 1; min-height: 200px; background: rgba(0,5,15,0.5); border-radius: 10px; position: relative; overflow: hidden; }
       .loading { border: 4px solid rgba(255,255,255,0.3); border-radius: 50%; border-top: 4px solid #fff; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 0 auto; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
       @keyframes spin { 0% { transform: translate(-50%, -50%) rotate(0deg); } 100% { transform: translate(-50%, -50%) rotate(360deg); } }
-      /* (Media queries remain unchanged) */
+      /* Media queries */
       @media (max-width: 360px) {
         #splash-logo { width: 120px; height: 120px; }
         .splash-text { font-size: 18px; letter-spacing: 3px; }
         #controls h3, .planet-title { font-size: 16px; }
         .nav-button { padding: 8px 12px; font-size: 13px; }
-        .control-label, .adjust-parameters label, .info-content p { font-size: 12px; }
+        .control-label, .adjust-panel label, .info-content p { font-size: 12px; }
       }
       @media (min-width: 361px) and (max-width: 767px) {
         #controls { max-height: 50vh; }
@@ -139,7 +174,6 @@
       @supports (-webkit-touch-callout: none) {
         .container, #solar-system { height: -webkit-fill-available; }
       }
-      .nav-button, #controls, #info-panel, .control-label { -webkit-user-select: none; user-select: none; }
     </style>
   </head>
   <body>
@@ -155,7 +189,7 @@
         <button class="nav-button" id="view-solar-system">Solar System</button>
         <button class="nav-button" id="view-kepler-laws">Lessons</button>
       </nav>
-      <!-- Toggle Controls Button -->
+      <!-- Toggle Controls Button (hidden by default) -->
       <button id="toggle-controls">Show Controls</button>
       <!-- Solar System Visualization -->
       <div id="solar-system"></div>
@@ -190,18 +224,19 @@
           <h2 class="planet-title" id="selected-planet-name">Object Name</h2>
         </div>
         <div class="info-content" id="planet-info"></div>
-        <!-- Adjust Form with Button Group -->
-        <div class="adjust-parameters" id="adjust-form" style="display: none;">
-          <h3>Adjust Planet Parameters</h3>
-          <label>
-            Eccentricity: <span id="adjust-ecc-value"></span>
+        <!-- Adjust Panel -->
+        <div class="adjust-panel" id="adjust-form" style="display: none;">
+          <h3>Adjust Parameters</h3>
+          <div class="input-group">
+            <label for="adjust-eccentricity">Eccentricity</label>
             <input type="range" id="adjust-eccentricity" min="0" max="0.9" step="0.01" />
-          </label>
-          <label>
-            Semi-major Axis Multiplier: <span id="adjust-semi-value"></span>
+            <div class="value-display" id="adjust-ecc-value"></div>
+          </div>
+          <div class="input-group">
+            <label for="adjust-semi-major">Semi-major Axis Multiplier</label>
             <input type="range" id="adjust-semi-major" min="0.5" max="2" step="0.1" value="1" />
-          </label>
-          <br /><br />
+            <div class="value-display" id="adjust-semi-value"></div>
+          </div>
           <div class="button-group">
             <button id="reset-adjust">Reset Adjustments</button>
             <button id="follow-planet">Follow Planet</button>
@@ -210,7 +245,7 @@
       </div>
       <!-- Kepler's Laws Section -->
       <div id="kepler-laws">
-        <!-- Lesson Visualizations (unchanged) -->
+        <!-- Lesson Visualizations-->
         <div class="law-container">
           <h2>Newton's Law of Universal Gravitation</h2>
           <div class="law-content">
@@ -295,8 +330,10 @@
       ];
 
       // Scaling constants
-      const REVOLUTION_SCALE = 10;
-      const ROTATION_SCALE = 1;
+      const REVOLUTION_SCALE = 1;
+      const ROTATION_SCALE = 10;
+      const ORBITAL_MULTIPLIER = 10;
+      const ROTATION_MULTIPLIER = 3;
 
       // Model data
       const models = {
@@ -324,26 +361,32 @@
 
       const sunData = { name: "sun", description: "The Sun powers our solar system.", color: "#ffcc00" };
 
-      // Moons data remains the same
+      // Moons data
       const moonsData = {
-        earth: [ { name: "moon", orbitRadius: 8, orbitSpeed: 1/12, scale: 0.2, description: "Earth's Moon influences tides." } ],
-        mars: [ { name: "phobos", orbitRadius: 8, orbitSpeed: 1.5, scale: 0.015, description: "Phobos is Mars' larger moon." },
-                { name: "deimos", orbitRadius: 10, orbitSpeed: 1, scale: 0.015, description: "Deimos is Mars' smaller moon." } ],
+        earth: [
+          { name: "moon", orbitRadius: 8, orbitSpeed: 1.022, scale: 0.2, description: "Earth's Moon influences tides." }
+        ],
+        mars: [
+          { name: "phobos", orbitRadius: 8, orbitSpeed: 2.138, scale: 0.015, description: "Phobos is Mars' larger moon." },
+          { name: "deimos", orbitRadius: 10, orbitSpeed: 1.351, scale: 0.015, description: "Deimos is Mars' smaller moon." }
+        ],
         jupiter: [
-            { name: "io", orbitRadius: 12, orbitSpeed: 1.8, scale: 0.001, description: "Io is volcanically active." },
-            { name: "europa", orbitRadius: 16, orbitSpeed: 1.6, scale: 0.001, description: "Europa may hide a subsurface ocean." },
-            { name: "ganymede", orbitRadius: 20, orbitSpeed: 1.4, scale: 0.001, description: "Ganymede is the largest moon." },
-            { name: "callisto", orbitRadius: 24, orbitSpeed: 1.2, scale: 0.001, description: "Callisto is heavily cratered." }
-          ],
+          { name: "io", orbitRadius: 12, orbitSpeed: 17.33, scale: 0.001, description: "Io is volcanically active." },
+          { name: "europa", orbitRadius: 16, orbitSpeed: 13.74, scale: 0.001, description: "Europa may hide a subsurface ocean." },
+          { name: "ganymede", orbitRadius: 20, orbitSpeed: 10.88, scale: 0.001, description: "Ganymede is the largest moon." },
+          { name: "callisto", orbitRadius: 24, orbitSpeed: 8.20, scale: 0.001, description: "Callisto is heavily cratered." }
+        ],
         saturn: [
-            { name: "titan", orbitRadius: 18, orbitSpeed: 1.3, scale: 0.0005, description: "Titan has a thick atmosphere." },
-            { name: "rhea", orbitRadius: 22, orbitSpeed: 1.4, scale: 0.0005, description: "Rhea is a mid-sized, cratered moon." }
-          ],
+          { name: "titan", orbitRadius: 18, orbitSpeed: 5.57, scale: 0.0005, description: "Titan has a thick atmosphere." },
+          { name: "rhea", orbitRadius: 22, orbitSpeed: 4.52, scale: 0.0005, description: "Rhea is a mid-sized, cratered moon." }
+        ],
         uranus: [
-            { name: "titania", orbitRadius: 18, orbitSpeed: 1.5, scale: 0.0007, description: "Titania features deep canyons." },
-            { name: "oberon", orbitRadius: 22, orbitSpeed: 1.4, scale: 0.0007, description: "Oberon is heavily cratered." }
-          ],
-        neptune: [ { name: "triton", orbitRadius: 16, orbitSpeed: 1.6, scale: 0.001, description: "Triton has a retrograde orbit and geysers." } ]
+          { name: "titania", orbitRadius: 18, orbitSpeed: 4.37, scale: 0.0007, description: "Titania features deep canyons." },
+          { name: "oberon", orbitRadius: 22, orbitSpeed: 3.76, scale: 0.0007, description: "Oberon is heavily cratered." }
+        ],
+        neptune: [
+          { name: "triton", orbitRadius: 16, orbitSpeed: 4.39, scale: 0.001, description: "Triton has a retrograde orbit and geysers." }
+        ]
       };
 
       const DEFAULT_TIME_SCALE = 1;
@@ -405,8 +448,8 @@
       // New variables for smooth right-click pan
       let isRightMouseDown = false;
       const panVelocity = new THREE.Vector2(0, 0);
-      const panDamping = 0.9; // damping factor per frame
-      const panAcceleration = 0.5; // acceleration multiplier
+      const panDamping = 0.9;
+      const panAcceleration = 0.5;
 
       function initSolarSystem() {
         scene = new THREE.Scene();
@@ -415,7 +458,7 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.getElementById("solar-system").appendChild(renderer.domElement);
         
-        // OrbitControls for rotation; disable default panning to use our custom smooth pan
+        // OrbitControls for rotation
         controls = new OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
         controls.dampingFactor = 0.05;
@@ -446,6 +489,8 @@
         
         gltfLoader.load(models.sun, function(gltf){
           const sun = gltf.scene;
+          sun.scale.set(0.75, 0.75, 0.75);
+          
           sun.traverse(child => {
             if(child.isMesh) {
               child.userData = { ...child.userData, type:"sun" };
@@ -573,7 +618,6 @@
         });
         window.addEventListener("mousemove", function(event){
           if(isRightMouseDown){
-            // Calculate movement delta and add to panVelocity with acceleration multiplier
             const deltaX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
             const deltaY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
             panVelocity.x += deltaX * panAcceleration;
@@ -597,7 +641,8 @@
           }
         }, {passive:false});
 
-        // Touch controls (mobile) remain unchanged
+        // MOBILE TOUCH CONTROLS
+        const mobilePanSpeed = 0.2;
         const solarSystemElem = document.getElementById("solar-system");
         let touchStartTime = 0, isTouching = false, lastTouchX = 0, lastTouchY = 0, lastTouchDistance = null, touchMoveCount = 0;
         solarSystemElem.addEventListener("touchstart", function(event){
@@ -617,18 +662,17 @@
           touchMoveCount++;
           if(event.touches.length === 1 && isTouching){
             const touch = event.touches[0];
-            const deltaX = Math.sign(touch.clientX - lastTouchX) * 0.5;
-            const deltaY = Math.sign(touch.clientY - lastTouchY) * 0.5;
+            const dx = touch.clientX - lastTouchX;
+            const dy = touch.clientY - lastTouchY;
             const panOffset = new THREE.Vector3();
             const right = new THREE.Vector3();
-            const up = new THREE.Vector3();
             camera.getWorldDirection(panOffset);
             right.crossVectors(camera.up, panOffset).normalize();
-            up.copy(camera.up).normalize();
-            right.multiplyScalar(deltaX);
-            up.multiplyScalar(deltaY);
-            camera.position.add(right).add(up);
-            controls.target.add(right).add(up);
+            right.multiplyScalar(-dx * mobilePanSpeed);
+            const forward = new THREE.Vector3();
+            camera.getWorldDirection(forward).normalize().multiplyScalar(-dy * mobilePanSpeed);
+            camera.position.add(right).add(forward);
+            controls.target.add(right).add(forward);
             lastTouchX = touch.clientX;
             lastTouchY = touch.clientY;
           } else if(event.touches.length === 2){
@@ -656,7 +700,7 @@
           event.preventDefault();
         }, {passive:false});
         
-        // Mobile optimizations remain unchanged
+        // Mobile optimizations
         const isMobile = ('ontouchstart' in window || navigator.maxTouchPoints > 0);
         function applyMobileOptimizations(){
           if(isMobile){
@@ -665,7 +709,7 @@
             camera.position.set(0,70,150);
             composer.removePass(bloomPass);
             showMobileInstructions();
-            totalAsteroids = Math.min(totalAsteroids, 1000);
+            totalAsteroids = Math.min(totalAsteroids, 1);
             scene.traverse(object => { if(object.isMesh){ object.frustumCulled = true; }});
             document.getElementById("controls").style.display = "none";
           }
@@ -677,7 +721,7 @@
             <div class="instructions-panel">
               <h3>Mobile Controls</h3>
               <ul>
-                <li>One finger: Pan (constant speed)</li>
+                <li>One finger: Pan (swipe left to move right, right to move left; vertical is normal)</li>
                 <li>Two fingers: Zoom in/out</li>
                 <li>Quick tap: Select object</li>
               </ul>
@@ -791,7 +835,7 @@
         animate();
       }
 
-      // Animation loop with smooth pan integration
+      // Animation loop with smooth pan integration and elevated speeds
       function animate(){
         requestAnimationFrame(animate);
         controls.update();
@@ -803,12 +847,14 @@
           const a = planet.data.semiMajorAxis * planet.data.semiMajorMultiplier * globalMultiplier * orbitScale;
           const ecc = planet.data.eccentricity;
           const b = a * Math.sqrt(1 - ecc*ecc);
-          const orbitalSpeed = (2*Math.PI/(planet.data.orbitalPeriod*REVOLUTION_SCALE)) * timeScale;
+          // Multiply the computed speeds by ORBITAL_MULTIPLIER for faster orbits
+          const orbitalSpeed = ORBITAL_MULTIPLIER * (2*Math.PI/(planet.data.orbitalPeriod*REVOLUTION_SCALE)) * timeScale;
           planet.angle += orbitalSpeed * delta;
           if(planet.mesh){
             planet.mesh.position.x = a * (Math.cos(planet.angle) - ecc);
             planet.mesh.position.z = b * Math.sin(planet.angle);
-            const rotSpeed = (2*Math.PI/(Math.abs(planet.data.rotationPeriod)*ROTATION_SCALE)) * timeScale;
+            // Multiply rotational speed by ROTATION_MULTIPLIER for faster spins
+            const rotSpeed = ROTATION_MULTIPLIER * (2*Math.PI/(Math.abs(planet.data.rotationPeriod)*ROTATION_SCALE)) * timeScale;
             planet.mesh.rotation.y += (planet.data.rotationPeriod < 0 ? -rotSpeed : rotSpeed) * delta;
             planet.mesh.updateMatrix();
             if(planet.moons && planet.moons.length > 0){
@@ -820,7 +866,6 @@
             }
           }
         });
-        // If following a planet, update controls target and move camera smoothly
         if(followPlanetKey && planetsGlobal[followPlanetKey]){
           const targetPos = planetsGlobal[followPlanetKey].mesh.position;
           controls.target.copy(targetPos);
@@ -828,17 +873,16 @@
         }
         if(asteroidBelt){ asteroidBelt.rotation.y += 0.0005; }
 
-        // Apply smooth right-click pan if any velocity is present
+        // Apply smooth right-click pan using horizontal (left/right) and vertical (forward/backward) movement
         if(panVelocity.lengthSq() > 0.001){
           const panOffset = new THREE.Vector3();
           const right = new THREE.Vector3();
-          const up = new THREE.Vector3();
           camera.getWorldDirection(panOffset);
           right.crossVectors(camera.up, panOffset).normalize().multiplyScalar(panVelocity.x * 0.01);
-          up.copy(camera.up).normalize().multiplyScalar(-panVelocity.y * 0.01);
-          camera.position.add(right).add(up);
-          controls.target.add(right).add(up);
-          // Dampen the pan velocity
+          const forward = new THREE.Vector3();
+          camera.getWorldDirection(forward).normalize().multiplyScalar(-panVelocity.y * 0.01);
+          camera.position.add(right).add(forward);
+          controls.target.add(right).add(forward);
           panVelocity.multiplyScalar(panDamping);
         }
         composer.render();
@@ -887,7 +931,7 @@
         }
       }
 
-      // Show object info in the side panel
+      // Show object info in the side panel (and make the panel visible)
       function showObjectInfo(userData){
         if(userData.type==="asteroid") return;
         const infoPanel = document.getElementById("info-panel");
@@ -936,7 +980,7 @@
         infoPanel.classList.add("active");
       }
 
-      // Mini visualizations for lessons remain unchanged
+      // Mini visualizations for lessons 
       const miniVisualizations = [];
       function createMiniScene(containerId){
         const container = document.getElementById(containerId);
@@ -1225,6 +1269,9 @@
       document.addEventListener("keyup", function(event){ keysPressed[event.key.toLowerCase()] = false; });
 
       document.addEventListener("DOMContentLoaded", function(){
+        // Ensure toggle button is hidden initially because controls are visible by default
+        document.getElementById("toggle-controls").style.display = "none";
+
         const toggleControlsBtn = document.getElementById("toggle-controls");
         const controlsPanel = document.getElementById("controls");
         toggleControlsBtn.addEventListener("click", function(){
@@ -1322,7 +1369,6 @@
             updateOrbitLine(key);
           });
         });
-        // Attach the follow button listener only once.
         document.getElementById("follow-planet").addEventListener("click", function(){
           if(followPlanetKey === selectedPlanetKey){
             followPlanetKey = null;
