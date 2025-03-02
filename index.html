@@ -58,18 +58,9 @@
         animation: pulse 2s infinite;
       }
       @keyframes pulse {
-        0% {
-          transform: scale(0.95);
-          box-shadow: 0 0 40px rgba(255, 94, 0, 0.5);
-        }
-        50% {
-          transform: scale(1.05);
-          box-shadow: 0 0 70px rgba(255, 94, 0, 0.7);
-        }
-        100% {
-          transform: scale(0.95);
-          box-shadow: 0 0 40px rgba(255, 94, 0, 0.5);
-        }
+        0% { transform: scale(0.95); box-shadow: 0 0 40px rgba(255, 94, 0, 0.5); }
+        50% { transform: scale(1.05); box-shadow: 0 0 70px rgba(255, 94, 0, 0.7); }
+        100% { transform: scale(0.95); box-shadow: 0 0 40px rgba(255, 94, 0, 0.5); }
       }
       .splash-text {
         margin-top: 20px;
@@ -82,9 +73,7 @@
         padding: 0 15px;
       }
       @keyframes fadeIn {
-        to {
-          opacity: 1;
-        }
+        to { opacity: 1; }
       }
       /* Main Container */
       .container {
@@ -122,13 +111,9 @@
       }
       /* Hide controls by default on mobile */
       @media (max-width: 767px) {
-        #controls {
-          display: none;
-        }
+        #controls { display: none; }
         /* Show toggle button on mobile */
-        #toggle-controls {
-          display: block;
-        }
+        #toggle-controls { display: block; }
       }
       #controls h3 {
         margin-bottom: 10px;
@@ -136,9 +121,7 @@
         padding-bottom: 8px;
         font-size: 16px;
       }
-      .control-group {
-        margin-bottom: 12px;
-      }
+      .control-group { margin-bottom: 12px; }
       .control-label {
         display: block;
         margin-bottom: 4px;
@@ -189,9 +172,7 @@
         transition: transform 0.4s ease;
         z-index: 9;
       }
-      #info-panel.active {
-        transform: translateX(0);
-      }
+      #info-panel.active { transform: translateX(0); }
       .info-header {
         display: flex;
         align-items: center;
@@ -209,24 +190,14 @@
         object-fit: cover;
         overflow: hidden;
       }
-      .planet-title {
-        font-size: 20px;
-        margin: 0;
-      }
-      .info-content p {
-        margin-bottom: 10px;
-        line-height: 1.5;
-        font-size: 14px;
-      }
+      .planet-title { font-size: 20px; margin: 0; }
+      .info-content p { margin-bottom: 10px; line-height: 1.5; font-size: 14px; }
       .adjust-parameters {
         margin-top: 15px;
         padding-top: 10px;
         border-top: 1px solid rgba(255, 255, 255, 0.1);
       }
-      .adjust-parameters label {
-        font-size: 13px;
-        color: #ccc;
-      }
+      .adjust-parameters label { font-size: 13px; color: #ccc; }
       .adjust-parameters input[type="range"] {
         width: 100%;
         margin: 5px 0 10px;
@@ -246,12 +217,10 @@
         margin-top: 5px;
       }
       .adjust-parameters button:hover,
-      #reset-controls:hover {
-        background: #ff9500;
-      }
+      #reset-controls:hover { background: #ff9500; }
       /* Toggle Controls Button (Mobile) */
       #toggle-controls {
-        display: none; /* shown only on mobile via media query */
+        display: none;
         position: fixed;
         bottom: 10px;
         right: 10px;
@@ -265,9 +234,7 @@
         transition: background 0.3s;
         font-size: 14px;
       }
-      #toggle-controls:hover {
-        background: #ff9500;
-      }
+      #toggle-controls:hover { background: #ff9500; }
       /* Close Button for Info Panel */
       .close-btn {
         position: absolute;
@@ -320,9 +287,7 @@
         display: inline-block;
       }
       .nav-button:hover,
-      .nav-button:active {
-        background: rgba(0, 20, 60, 0.9);
-      }
+      .nav-button:active { background: rgba(0, 20, 60, 0.9); }
       /* Lessons Section */
       #kepler-laws {
         display: none;
@@ -386,100 +351,42 @@
         transform: translate(-50%, -50%);
       }
       @keyframes spin {
-        0% {
-          transform: translate(-50%, -50%) rotate(0deg);
-        }
-        100% {
-          transform: translate(-50%, -50%) rotate(360deg);
-        }
+        0% { transform: translate(-50%, -50%) rotate(0deg); }
+        100% { transform: translate(-50%, -50%) rotate(360deg); }
       }
       /* Media Queries for devices */
       @media (max-width: 360px) {
-        #splash-logo {
-          width: 120px;
-          height: 120px;
-        }
-        .splash-text {
-          font-size: 18px;
-          letter-spacing: 3px;
-        }
-        #controls h3,
-        .planet-title {
-          font-size: 16px;
-        }
-        .nav-button {
-          padding: 8px 12px;
-          font-size: 13px;
-        }
-        .control-label,
-        .adjust-parameters label,
-        .info-content p {
-          font-size: 12px;
-        }
+        #splash-logo { width: 120px; height: 120px; }
+        .splash-text { font-size: 18px; letter-spacing: 3px; }
+        #controls h3, .planet-title { font-size: 16px; }
+        .nav-button { padding: 8px 12px; font-size: 13px; }
+        .control-label, .adjust-parameters label, .info-content p { font-size: 12px; }
       }
       @media (min-width: 361px) and (max-width: 767px) {
-        #controls {
-          max-height: 45vh;
-        }
-        .nav-button {
-          padding: 10px 14px;
-        }
-        #info-panel {
-          max-height: 65vh;
-        }
+        #controls { max-height: 45vh; }
+        .nav-button { padding: 10px 14px; }
+        #info-panel { max-height: 65vh; }
       }
       @media (min-width: 768px) {
-        #controls {
-          width: 300px;
-          left: 20px;
-          right: auto;
-          max-height: 80vh;
-        }
-        #info-panel {
-          width: 350px;
-          right: 20px;
-          top: 20px;
-        }
-        .law-content {
-          flex-direction: row;
-        }
-        nav {
-          left: 20px;
-          top: 20px;
-        }
-        .splash-text {
-          font-size: 28px;
-          letter-spacing: 5px;
-        }
-        #splash-logo {
-          width: 180px;
-          height: 180px;
-        }
+        #controls { width: 300px; left: 20px; right: auto; max-height: 80vh; }
+        #info-panel { width: 350px; right: 20px; top: 20px; }
+        .law-content { flex-direction: row; }
+        nav { left: 20px; top: 20px; }
+        .splash-text { font-size: 28px; letter-spacing: 5px; }
+        #splash-logo { width: 180px; height: 180px; }
       }
       @supports (padding: max(0px)) {
-        nav,
-        #controls,
-        #info-panel {
+        nav, #controls, #info-panel {
           padding-left: max(12px, env(safe-area-inset-left));
           padding-right: max(12px, env(safe-area-inset-right));
         }
-        nav.lessons {
-          padding-top: max(8px, env(safe-area-inset-top));
-        }
-        #controls {
-          padding-bottom: max(12px, env(safe-area-inset-bottom));
-        }
+        nav.lessons { padding-top: max(8px, env(safe-area-inset-top)); }
+        #controls { padding-bottom: max(12px, env(safe-area-inset-bottom)); }
       }
       @supports (-webkit-touch-callout: none) {
-        .container,
-        #solar-system {
-          height: -webkit-fill-available;
-        }
+        .container, #solar-system { height: -webkit-fill-available; }
       }
-      .nav-button,
-      #controls,
-      #info-panel,
-      .control-label {
+      .nav-button, #controls, #info-panel, .control-label {
         -webkit-user-select: none;
         user-select: none;
       }
@@ -497,8 +404,8 @@
       <nav id="nav">
         <button class="nav-button" id="view-solar-system">Solar System</button>
         <button class="nav-button" id="view-kepler-laws">Lessons</button>
-      <!-- Toggle Controls Button (visible on mobile) -->
-      <button id="toggle-controls" class ="nav-button">Show Controls</button>
+        <!-- Toggle Controls Button (visible on mobile) -->
+        <button id="toggle-controls" class="nav-button">Show Controls</button>
       </nav>
       <!-- Solar System Visualization -->
       <div id="solar-system"></div>
@@ -731,9 +638,7 @@
         const countPerModel = Math.floor(totalAsteroids / asteroidModels.length);
         asteroidModels.forEach(model => {
           let baseMesh;
-          model.traverse(child => {
-            if(child.isMesh && !baseMesh) baseMesh = child;
-          });
+          model.traverse(child => { if(child.isMesh && !baseMesh) baseMesh = child; });
           if (!baseMesh) return;
           const geometry = baseMesh.geometry;
           const material = baseMesh.material.clone();
@@ -1118,26 +1023,14 @@
             performanceToggle.addEventListener('click', function() {
               highPerformance = !highPerformance;
               if (highPerformance) {
-                if (asteroidBelt) {
-                  asteroidBelt.visible = false;
-                }
+                if (asteroidBelt) { asteroidBelt.visible = false; }
                 renderer.shadowMap.enabled = false;
-                scene.traverse(object => {
-                  if (object.isLine) {
-                    object.visible = false;
-                  }
-                });
+                scene.traverse(object => { if (object.isLine) { object.visible = false; } });
                 this.textContent = 'Standard Mode';
               } else {
-                if (asteroidBelt) {
-                  asteroidBelt.visible = true;
-                }
+                if (asteroidBelt) { asteroidBelt.visible = true; }
                 renderer.shadowMap.enabled = true;
-                scene.traverse(object => {
-                  if (object.isLine) {
-                    object.visible = true;
-                  }
-                });
+                scene.traverse(object => { if (object.isLine) { object.visible = true; } });
                 this.textContent = 'High Performance Mode';
               }
             });
@@ -1157,7 +1050,8 @@
           }
         });
 
-        document.addEventListener("DOMContentLoaded", function() {
+        // Splash Screen Removal – Check if DOM is already ready
+        function initSplash() {
           setTimeout(function() {
             const splashScreen = document.getElementById("splash-screen");
             splashScreen.style.opacity = "0";
@@ -1166,7 +1060,12 @@
               preloadAsteroids(initSolarSystem);
             }, 1500);
           }, 2500);
-        });
+        }
+        if (document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", initSplash);
+        } else {
+          initSplash();
+        }
 
         function getDistance(t1, t2) {
           let dx = t2.clientX - t1.clientX;
