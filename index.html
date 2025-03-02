@@ -6,6 +6,7 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
     />
+    <link rel="icon" href="texture/icon.svg" type="image/svg+xml" />
     <!-- Import map for modules -->
     <script type="importmap">
       {
@@ -943,13 +944,15 @@
           const panOffset = new THREE.Vector3();
           {
             const te = camera.matrix.elements;
-            // Right vector (X column)
+            // Right vector (first column)
             const right = new THREE.Vector3(te[0], te[1], te[2]);
-            // Up vector (Y column)
+            // Up vector (second column)
             const up = new THREE.Vector3(te[4], te[5], te[6]);
-            // Invert the movement so that dragging right pans left, etc.
+            // For horizontal panning, invert deltaX as before.
             panOffset.addScaledVector(right, -panX);
-            panOffset.addScaledVector(up, -panY);
+            // For vertical panning, use the deltaY directly so that
+            // dragging upward (negative deltaY) mimics a right-click–drag upward.
+            panOffset.addScaledVector(up, panY);
           }
           
           // Update camera position and target
@@ -965,7 +968,6 @@
             const touch = event.touches[0];
             const deltaX = touch.clientX - lastTouchX;
             const deltaY = touch.clientY - lastTouchY;
-            // Call our pan helper.
             pan(deltaX, deltaY);
             lastTouchX = touch.clientX;
             lastTouchY = touch.clientY;
