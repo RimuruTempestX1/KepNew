@@ -106,11 +106,6 @@
       }
       /* UI Controls Panel */
       #controls {
-        position: absolute;
-        bottom: 10px;
-        left: 10px;
-        right: 10px;
-        z-index: 10;
         background: rgba(0, 10, 30, 0.7);
         backdrop-filter: blur(10px);
         -webkit-backdrop-filter: blur(10px);
@@ -118,11 +113,29 @@
         padding: 12px;
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         border: 1px solid rgba(255, 255, 255, 0.1);
-        max-height: 40vh;
+        max-height: 80vh;
         overflow-y: auto;
-        position: relative;
+        z-index: 10;
       }
-      /* Close Controls Button (appears inside the panel) */
+      /* Desktop: fixed sidebar on left */
+      @media (min-width: 768px) {
+        #controls {
+          position: fixed;
+          top: 20px;
+          left: 20px;
+          width: 300px;
+        }
+      }
+      /* Mobile: full width at bottom */
+      @media (max-width: 767px) {
+        #controls {
+          position: fixed;
+          bottom: 10px;
+          left: 10px;
+          right: 10px;
+        }
+      }
+      /* Close Controls Button (inside panel) */
       #close-controls {
         position: absolute;
         top: 10px;
@@ -132,12 +145,6 @@
         font-size: 20px;
         color: #fff;
         cursor: pointer;
-      }
-      /* Hide controls by default on mobile */
-      @media (max-width: 767px) {
-        #controls {
-          display: none;
-        }
       }
       /* Toggle Controls Button (for mobile when panel is hidden) */
       #toggle-controls {
@@ -218,18 +225,40 @@
         line-height: 1.5;
         font-size: 14px;
       }
-      .adjust-parameters {
-        margin-top: 15px;
-        padding-top: 10px;
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
+      /* Organized Controls Layout */
+      #controls .control-group {
+        margin-bottom: 15px;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
       }
-      .adjust-parameters label {
+      #controls .control-label {
         font-size: 13px;
-        color: #ccc;
+        color: #aaa;
       }
-      .adjust-parameters input[type="range"] {
+      #controls input[type="range"] {
         width: 100%;
-        margin: 5px 0 10px;
+        background: rgba(255, 255, 255, 0.1);
+        height: 5px;
+        border-radius: 5px;
+        -webkit-appearance: none;
+        appearance: none;
+      }
+      #controls input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 20px;
+        height: 20px;
+        background: #ff5e00;
+        border-radius: 50%;
+        cursor: pointer;
+      }
+      #controls input[type="range"]::-moz-range-thumb {
+        width: 20px;
+        height: 20px;
+        background: #ff5e00;
+        border-radius: 50%;
+        cursor: pointer;
+        border: none;
       }
       .adjust-parameters button,
       #reset-controls {
@@ -388,7 +417,7 @@
       }
       @media (min-width: 361px) and (max-width: 767px) {
         #controls {
-          max-height: 45vh;
+          max-height: 50vh;
         }
         .nav-button {
           padding: 10px 14px;
@@ -398,12 +427,6 @@
         }
       }
       @media (min-width: 768px) {
-        #controls {
-          width: 300px;
-          left: 20px;
-          right: auto;
-          max-height: 80vh;
-        }
         #info-panel {
           width: 350px;
           right: 20px;
@@ -467,7 +490,7 @@
         <button class="nav-button" id="view-solar-system">Solar System</button>
         <button class="nav-button" id="view-kepler-laws">Lessons</button>
       </nav>
-      <!-- Toggle Controls Button (visible when controls are hidden) -->
+      <!-- Toggle Controls Button (visible when controls are hidden on mobile) -->
       <button id="toggle-controls">Show Controls</button>
       <!-- Solar System Visualization -->
       <div id="solar-system"></div>
@@ -871,7 +894,7 @@
           detectInteraction(event.clientX, event.clientY);
         });
 
-        // Mobile touch and pan controls (omitted comments for brevity)
+        // Mobile touch and pan controls
         const solarSystemElem = document.getElementById("solar-system");
         let touchStartTime = 0, isTouching = false, lastTouchX = 0, lastTouchY = 0, lastTouchDistance = null, touchMoveCount = 0;
         solarSystemElem.addEventListener("touchstart", function(event) {
@@ -954,7 +977,6 @@
                 object.frustumCulled = true;
               }
             });
-            // Hide controls initially on mobile
             document.getElementById("controls").style.display = "none";
           }
         }
@@ -1266,7 +1288,6 @@
       }
 
       // Lesson Visualizations
-
       let lawVisualizationsInitialized = false;
       function initLawVisualizations(){
         if(lawVisualizationsInitialized) return;
@@ -1325,7 +1346,6 @@
             distanceSprite.material.map.needsUpdate = true;
           }
         });
-        // No continuous update needed
       }
 
       // Kepler's First Law Visualization
