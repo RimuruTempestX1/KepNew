@@ -14,277 +14,476 @@
     <title>Kepler's & Newton's Laws: Solar System Explorer</title>
     <style>
       /* Global Styles */
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        font-family: Arial, sans-serif;
-      }
-      html, body {
-        width: 100%;
-        height: 100%;
-        overflow-x: hidden;
-      }
-      body {
-        background-color: #050e1a;
-        color: #fff;
-        -ms-touch-action: none;
-        touch-action: none;
-      }
-      /* Splash Screen */
-      #splash-screen {
-        position: fixed;
-        width: 100%;
-        height: 100%;
-        background-color: #050e1a;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        z-index: 1000;
-        transition: opacity 1.5s ease-out;
-      }
-      #splash-logo {
-        width: 180px;
-        height: 180px;
-        border-radius: 50%;
-        background: radial-gradient(circle, #ff9500, #ff5e00);
-        box-shadow: 0 0 60px rgba(255, 94, 0, 0.6);
-        animation: pulse 2s infinite;
-      }
-      @keyframes pulse {
-        0% { transform: scale(0.95); box-shadow: 0 0 40px rgba(255, 94, 0, 0.5); }
-        50% { transform: scale(1.05); box-shadow: 0 0 70px rgba(255, 94, 0, 0.7); }
-        100% { transform: scale(0.95); box-shadow: 0 0 40px rgba(255, 94, 0, 0.5); }
-      }
-      .splash-text {
-        margin-top: 20px;
-        font-size: 28px;
-        letter-spacing: 5px;
-        text-transform: uppercase;
-        opacity: 0;
-        animation: fadeIn 2s forwards 0.5s;
-      }
-      @keyframes fadeIn { to { opacity: 1; } }
-      /* Main Container */
-      .container {
-        width: 100%;
-        height: 100vh;
-        position: relative;
-        overflow: hidden;
-      }
-      /* Solar System Visualization */
-      #solar-system {
-        width: 100vw;
-        height: 100vh;
-        position: absolute;
-        top: 0;
-        left: 0;
-        /* Prevent default scrolling and pinch zoom issues */
-        touch-action: pan-y pinch-zoom;
-      }
-      /* UI Controls */
-      #controls {
-        position: absolute;
-        bottom: 20px;
-        left: 20px;
-        z-index: 10;
-        background: rgba(0, 10, 30, 0.7);
-        backdrop-filter: blur(10px);
-        border-radius: 15px;
-        padding: 15px;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-      }
-      #controls h3 {
-        margin-bottom: 15px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        padding-bottom: 10px;
-      }
-      .control-group { margin-bottom: 15px; }
-      .control-label {
-        display: block;
-        margin-bottom: 5px;
-        font-size: 14px;
-        color: #aaa;
-      }
-      input[type="range"] {
-        width: 100%;
-        margin-bottom: 10px;
-        background: rgba(255, 255, 255, 0.1);
-        height: 5px;
-        border-radius: 5px;
-      }
-      /* Info Panel */
-      #info-panel {
-        position: absolute;
-        top: 20px;
-        right: 20px;
-        width: 300px;
-        max-height: 80vh;
-        overflow-y: auto;
-        background: rgba(0, 10, 30, 0.7);
-        backdrop-filter: blur(10px);
-        border-radius: 15px;
-        padding: 20px;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        transform: translateX(350px);
-        transition: transform 0.5s ease;
-      }
-      #info-panel.active { transform: translateX(0); }
-      .info-header {
-        display: flex;
-        align-items: center;
-        margin-bottom: 15px;
-        padding-bottom: 15px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      }
-      .planet-icon {
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        margin-right: 15px;
-        background-size: cover;
-        background-position: center;
-        object-fit: cover;
-        overflow: hidden;
-      }
-      .planet-title { font-size: 24px; margin: 0; }
-      .info-content p { margin-bottom: 10px; line-height: 1.6; }
-      /* Adjust Parameters Form & Reset Buttons */
-      .adjust-parameters {
-        margin-top: 20px;
-        padding-top: 10px;
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
-      }
-      .adjust-parameters label { font-size: 14px; color: #ccc; }
-      .adjust-parameters input[type="range"] { width: 100%; margin: 5px 0 10px; }
-      .adjust-parameters button,
-      #reset-controls {
-        background: #ff5e00;
-        border: none;
-        padding: 8px 12px;
-        color: #fff;
-        border-radius: 5px;
-        cursor: pointer;
-        transition: background 0.3s;
-      }
-      .adjust-parameters button:hover,
-      #reset-controls:hover { background: #ff9500; }
-      /* Navigation */
-      nav {
-        position: absolute;
-        top: 20px;
-        left: 20px;
-        z-index: 20;
-      }
-      /* Lessons Navbar Fixed Header */
-      nav.lessons {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        background: rgba(0, 10, 30, 0.9);
-        padding: 10px;
-        z-index: 1000;
-      }
-      .nav-button {
-        background: rgba(0, 10, 30, 0.7);
-        backdrop-filter: blur(10px);
-        border-radius: 8px;
-        padding: 10px 15px;
-        color: white;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        margin-right: 10px;
-        cursor: pointer;
-        transition: background 0.3s;
-      }
-      .nav-button:hover { background: rgba(0, 20, 60, 0.8); }
-      /* Lessons Section Content (push below fixed header) */
-      #kepler-laws {
-        display: none;
-        position: absolute;
-        top: 60px;
-        left: 0;
-        width: 100vw;
-        height: calc(100vh - 60px);
-        background: #050e1a;
-        z-index: 5;
-        padding: 20px;
-        overflow-y: auto;
-      }
-      .law-container {
-        max-width: 1000px;
-        margin: 0 auto 40px;
-        background: rgba(0, 10, 30, 0.7);
-        backdrop-filter: blur(10px);
-        border-radius: 15px;
-        padding: 25px;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-      }
-      .law-container h2 {
-        margin-bottom: 20px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        padding-bottom: 15px;
-      }
-      .law-content {
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-      }
-      @media (min-width: 768px) { .law-content { flex-direction: row; } }
-      .law-text { flex: 1; }
-      .law-viz {
-        flex: 1;
-        min-height: 250px;
-        background: rgba(0, 5, 15, 0.5);
-        border-radius: 10px;
-        position: relative;
-        overflow: hidden;
-      }
-      .loading {
-        border: 4px solid rgba(255, 255, 255, 0.3);
-        border-radius: 50%;
-        border-top: 4px solid #fff;
-        width: 30px;
-        height: 30px;
-        animation: spin 1s linear infinite;
-        margin: 0 auto;
-      }
-      @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-      /* Responsive adjustments */
-      @media (max-width: 768px) {
-        #controls {
-          left: 10px;
-          right: 10px;
-          bottom: 20px;
-          width: auto;
-        }
-        nav {
-          left: 10px;
-          padding: 10px;
-        }
-        #info-panel {
-          top: 10px;
-          right: 10px;
-          width: calc(100% - 20px);
-          max-height: 50vh;
-        }
-        .nav-button {
-          padding: 8px 12px;
-          font-size: 14px;
-        }
-      }
-      @media (max-width: 480px) {
-        .splash-text { font-size: 22px; }
-        #controls, nav, #info-panel {
-          font-size: 14px;
-          padding: 8px;
-        }
-        #info-panel { width: calc(100% - 16px); }
-      }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch; /* Improved scrolling on iOS */
+}
+
+body {
+  background-color: #050e1a;
+  color: #fff;
+  /* Modified touch handling to allow scrolling when needed */
+  touch-action: manipulation; 
+  position: fixed; /* Prevent unwanted bouncing on iOS */
+}
+
+/* Splash Screen */
+#splash-screen {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  background-color: #050e1a;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  transition: opacity 1.5s ease-out;
+}
+
+#splash-logo {
+  width: 150px; /* Reduced size for mobile */
+  height: 150px; /* Reduced size for mobile */
+  border-radius: 50%;
+  background: radial-gradient(circle, #ff9500, #ff5e00);
+  box-shadow: 0 0 60px rgba(255, 94, 0, 0.6);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(0.95); box-shadow: 0 0 40px rgba(255, 94, 0, 0.5); }
+  50% { transform: scale(1.05); box-shadow: 0 0 70px rgba(255, 94, 0, 0.7); }
+  100% { transform: scale(0.95); box-shadow: 0 0 40px rgba(255, 94, 0, 0.5); }
+}
+
+.splash-text {
+  margin-top: 20px;
+  font-size: 24px; /* Slightly smaller for mobile */
+  letter-spacing: 4px; /* Reduced for better mobile fit */
+  text-transform: uppercase;
+  opacity: 0;
+  animation: fadeIn 2s forwards 0.5s;
+  text-align: center; /* Center text for mobile */
+  padding: 0 15px; /* Add padding for very small screens */
+}
+
+@keyframes fadeIn { to { opacity: 1; } }
+
+/* Main Container */
+.container {
+  width: 100%;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Solar System Visualization */
+#solar-system {
+  width: 100vw;
+  height: 100vh;
+  position: absolute;
+  top: 0;
+  left: 0;
+  /* Allow pan and zoom on mobile */
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent; /* Remove tap highlight */
+}
+
+/* UI Controls - Mobile Optimized */
+#controls {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  right: 10px;
+  z-index: 10;
+  background: rgba(0, 10, 30, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px); /* Support for Safari */
+  border-radius: 15px;
+  padding: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  max-height: 40vh; /* Limit height on mobile */
+  overflow-y: auto; /* Add scrolling for small screens */
+}
+
+#controls h3 {
+  margin-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 8px;
+  font-size: 16px; /* Adjusted for mobile */
+}
+
+.control-group { 
+  margin-bottom: 12px; 
+}
+
+.control-label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 13px;
+  color: #aaa;
+}
+
+/* Improve range input touch targets */
+input[type="range"] {
+  width: 100%;
+  margin-bottom: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  height: 5px;
+  border-radius: 5px;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  background: #ff5e00;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  background: #ff5e00;
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+}
+
+/* Info Panel - Mobile Optimized */
+#info-panel {
+  position: absolute;
+  top: 60px; /* Position below navigation */
+  right: 10px;
+  width: calc(100% - 20px); /* Full width minus margins */
+  max-height: 70vh;
+  overflow-y: auto;
+  background: rgba(0, 10, 30, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 15px;
+  padding: 15px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transform: translateX(100%);
+  transition: transform 0.4s ease;
+  z-index: 9;
+}
+
+#info-panel.active { 
+  transform: translateX(0);
+}
+
+.info-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.planet-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 12px;
+  background-size: cover;
+  background-position: center;
+  object-fit: cover;
+  overflow: hidden;
+}
+
+.planet-title { 
+  font-size: 20px; 
+  margin: 0; 
+}
+
+.info-content p { 
+  margin-bottom: 10px; 
+  line-height: 1.5; 
+  font-size: 14px;
+}
+
+/* Adjust Parameters Form & Reset Buttons */
+.adjust-parameters {
+  margin-top: 15px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.adjust-parameters label { 
+  font-size: 13px; 
+  color: #ccc; 
+}
+
+.adjust-parameters input[type="range"] { 
+  width: 100%; 
+  margin: 5px 0 10px; 
+}
+
+/* Larger touch targets for buttons */
+.adjust-parameters button,
+#reset-controls {
+  background: #ff5e00;
+  border: none;
+  padding: 10px 15px;
+  color: #fff;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s;
+  font-size: 14px;
+  min-height: 44px; /* Apple's recommended minimum touch target size */
+  width: 100%; /* Full width on mobile */
+  margin-top: 5px;
+}
+
+.adjust-parameters button:hover,
+#reset-controls:hover { 
+  background: #ff9500; 
+}
+
+/* Navigation - Mobile Optimized */
+nav {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  z-index: 20;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* Lessons Navbar Fixed Header */
+nav.lessons {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: rgba(0, 10, 30, 0.9);
+  padding: 8px;
+  z-index: 1000;
+  display: flex;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  white-space: nowrap;
+}
+
+.nav-button {
+  background: rgba(0, 10, 30, 0.8);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 8px;
+  padding: 12px 15px;
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  margin-right: 6px;
+  cursor: pointer;
+  transition: background 0.3s;
+  min-height: 44px; /* Larger touch target */
+  font-size: 14px;
+  display: inline-block;
+}
+
+.nav-button:hover, .nav-button:active { 
+  background: rgba(0, 20, 60, 0.9); 
+}
+
+/* Lessons Section Content */
+#kepler-laws {
+  display: none;
+  position: absolute;
+  top: 60px;
+  left: 0;
+  width: 100vw;
+  height: calc(100vh - 60px);
+  background: #050e1a;
+  z-index: 5;
+  padding: 15px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.law-container {
+  max-width: 100%;
+  margin: 0 auto 30px;
+  background: rgba(0, 10, 30, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.law-container h2 {
+  margin-bottom: 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 12px;
+  font-size: 18px;
+}
+
+.law-content {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.law-text { 
+  flex: 1; 
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.law-viz {
+  flex: 1;
+  min-height: 200px;
+  background: rgba(0, 5, 15, 0.5);
+  border-radius: 10px;
+  position: relative;
+  overflow: hidden;
+}
+
+.loading {
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top: 4px solid #fff;
+  width: 30px;
+  height: 30px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+@keyframes spin { 
+  0% { transform: translate(-50%, -50%) rotate(0deg); } 
+  100% { transform: translate(-50%, -50%) rotate(360deg); } 
+}
+
+/* Media Queries for Different Device Sizes */
+/* Small phones */
+@media (max-width: 360px) {
+  #splash-logo {
+    width: 120px;
+    height: 120px;
+  }
+  
+  .splash-text {
+    font-size: 18px;
+    letter-spacing: 3px;
+  }
+  
+  #controls h3,
+  .planet-title {
+    font-size: 16px;
+  }
+  
+  .nav-button {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+  
+  .control-label,
+  .adjust-parameters label,
+  .info-content p {
+    font-size: 12px;
+  }
+}
+
+/* Medium phones to small tablets */
+@media (min-width: 361px) and (max-width: 767px) {
+  #controls {
+    max-height: 45vh;
+  }
+  
+  .nav-button {
+    padding: 10px 14px;
+  }
+  
+  #info-panel {
+    max-height: 65vh;
+  }
+}
+
+/* Tablets and larger devices */
+@media (min-width: 768px) {
+  #controls {
+    width: 300px;
+    left: 20px;
+    right: auto;
+    max-height: 80vh;
+  }
+  
+  #info-panel {
+    width: 350px;
+    right: 20px;
+    top: 20px;
+  }
+  
+  .law-content {
+    flex-direction: row;
+  }
+  
+  nav {
+    left: 20px;
+    top: 20px;
+  }
+  
+  .splash-text {
+    font-size: 28px;
+    letter-spacing: 5px;
+  }
+  
+  #splash-logo {
+    width: 180px;
+    height: 180px;
+  }
+}
+
+/* Fix for notched phones (like iPhone X and newer) */
+@supports (padding: max(0px)) {
+  nav, #controls, #info-panel {
+    padding-left: max(12px, env(safe-area-inset-left));
+    padding-right: max(12px, env(safe-area-inset-right));
+  }
+  
+  nav.lessons {
+    padding-top: max(8px, env(safe-area-inset-top));
+  }
+  
+  #controls {
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+  }
+}
+
+/* Fix for iOS Safari 100vh issue */
+@supports (-webkit-touch-callout: none) {
+  .container, #solar-system {
+    height: -webkit-fill-available;
+  }
+}
+
+/* Prevent text selection on UI elements */
+.nav-button, #controls, #info-panel, .control-label {
+  -webkit-user-select: none;
+  user-select: none;
+}
     </style>
   </head>
   <body>
