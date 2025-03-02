@@ -790,6 +790,245 @@ solarSystemElem.addEventListener("touchend", function(event) {
   event.preventDefault();
 }, {passive: false});
 
+        // --- Mobile Detection and Optimizations ---
+const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+// Function to apply mobile-specific optimizations
+function applyMobileOptimizations() {
+  if (isMobile) {
+    // Add mobile class to body for CSS targeting
+    document.body.classList.add('mobile-device');
+    
+    // Reduce quality for better performance on mobile
+    renderer.setPixelRatio(window.devicePixelRatio > 1 ? 1.5 : 1);
+    
+    // Adjust camera initial position for better mobile view
+    camera.position.set(0, 70, 150);
+    
+    // Disable some effects for performance
+    composer.removePass(bloomPass);
+    
+    // Add mobile instructions initially
+    showMobileInstructions();
+    
+    // Reduce asteroid count for better performance
+    totalAsteroids = Math.min(totalAsteroids, 1000);
+    
+    // Optimize frustum culling
+    scene.traverse(object => {
+      if (object.isMesh) {
+        object.frustumCulled = true;
+      }
+    });
+  }
+}
+
+// Function to show mobile-specific instructions
+function showMobileInstructions() {
+  const mobileInstructions = document.createElement('div');
+  mobileInstructions.id = 'mobile-instructions';
+  mobileInstructions.innerHTML = `
+    <div class="instructions-panel">
+      <h3>Mobile Controls</h3>
+      <ul>
+        <li>One finger: Pan the view</li>
+        <li>Two fingers: Zoom in/out</li>
+        <li>Quick tap: Select object</li>
+      </ul>
+      <button id="close-instructions">Got it!</button>
+    </div>
+  `;
+  document.body.appendChild(mobileInstructions);
+  
+  // Style the instructions
+  const style = document.createElement('style');
+  style.textContent = `
+    #mobile-instructions {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.7);
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .instructions-panel {
+      background: rgba(20, 30, 50, 0.95);
+      padding: 20px;
+      border-radius: 15px;
+      max-width: 85%;
+      text-align: center;
+      box-shadow: 0 5px 25px rgba(0,0,0,0.5);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .instructions-panel h3 {
+      margin-top: 0;
+      color: #4a90e2;
+    }
+    .instructions-panel ul {
+      text-align: left;
+      margin: 15px 0;
+      padding-left: 20px;
+    }
+    #close-instructions {
+      margin-top: 10px;
+      width: 100%;
+    }
+  `;
+  document.head.appendChild(style);
+  
+  // Close button functionality
+  document.getElementById('close-instructions').addEventListener('click', function() {
+    document.body.removeChild(mobileInstructions);
+    localStorage.setItem('mobileInstructionsShown', 'true');
+  });
+  
+  // Don't show again if user has seen it
+  if (localStorage.getItem('mobileInstructionsShown') === 'true') {
+    document.body.removeChild(mobileInstructions);
+  }
+}
+
+// Add device orientation controls for mobile
+function enableDeviceOrientationControls() {
+  if (isMobile && typeof DeviceOrientationEvent !== 'undefined') {
+    const deviceOrientationToggle = document.createElement('button');
+    deviceOrientationToggle.id = 'orientation-toggle';
+    deviceOrientationToggle.textContent = 'Enable Gyroscope';
+    deviceOrientationToggle.style.position = 'fixed';
+    deviceOrientationToggle.style.bottom = '80px';
+    deviceOrientationToggle.style.right = '10px';
+    deviceOrientationToggle.style.zIndex = '1000';
+    document.body.appendChild(deviceOrientationToggle);
+    
+    let gyroEnabled = false;
+    deviceOrientationToggle.addEventListener('click', function() {
+      if (!gyroEnabled) {
+        // Request permission if needed
+        if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+          DeviceOrientationEvent.requestPermission()
+            .then(permissionState => {
+              if (permissionState === 'granted') {
+                enableGyroscope();
+                this.textContent = 'Disable Gyroscope';
+                gyroEnabled = true;
+              }
+            })
+            .catch(console.error);
+        } else {
+          enableGyroscope();
+          this.textContent = 'Disable Gyroscope';
+          gyroEnabled = true;
+        }
+      } else {
+        disableGyroscope();
+        this.textContent = 'Enable Gyroscope';
+        gyroEnabled = false;
+      }
+    });
+    
+    let deviceOrientation = null;
+    
+    function enableGyroscope() {
+      deviceOrientation = new THREE.DeviceOrientationControls(camera);
+      window.addEventListener('deviceorientation', updateOrientation);
+    }
+    
+    function disableGyroscope() {
+      if (deviceOrientation) {
+        window.removeEventListener('deviceorientation', updateOrientation);
+        deviceOrientation.disconnect();
+        deviceOrientation = null;
+      }
+    }
+    
+    function updateOrientation() {
+      if (deviceOrientation) {
+        deviceOrientation.update();
+      }
+    }
+  }
+}
+
+// Add performance mode toggle for mobile
+function addPerformanceModeToggle() {
+  if (isMobile) {
+    const performanceToggle = document.createElement('button');
+    performanceToggle.id = 'performance-toggle';
+    performanceToggle.textContent = 'High Performance Mode';
+    performanceToggle.style.position = 'fixed';
+    performanceToggle.style.bottom = '130px';
+    performanceToggle.style.right = '10px';
+    performanceToggle.style.zIndex = '1000';
+    document.body.appendChild(performanceToggle);
+    
+    let highPerformance = false;
+    
+    performanceToggle.addEventListener('click', function() {
+      highPerformance = !highPerformance;
+      
+      if (highPerformance) {
+        // Hide asteroid belt for better performance
+        if (asteroidBelt) {
+          asteroidBelt.visible = false;
+        }
+        
+        // Reduce shadow quality
+        renderer.shadowMap.enabled = false;
+        
+        // Hide orbit lines
+        scene.traverse(object => {
+          if (object.isLine) {
+            object.visible = false;
+          }
+        });
+        
+        this.textContent = 'Standard Mode';
+      } else {
+        // Restore defaults
+        if (asteroidBelt) {
+          asteroidBelt.visible = true;
+        }
+        
+        renderer.shadowMap.enabled = true;
+        
+        scene.traverse(object => {
+          if (object.isLine) {
+            object.visible = true;
+          }
+        });
+        
+        this.textContent = 'High Performance Mode';
+      }
+    });
+  }
+}
+
+// Call these mobile enhancement functions at the right time
+document.addEventListener("DOMContentLoaded", function() {
+  // The existing timeout for splash screen
+  setTimeout(function() {
+    const splashScreen = document.getElementById("splash-screen");
+    splashScreen.style.opacity = "0";
+    setTimeout(function() {
+      splashScreen.style.display = "none";
+      preloadAsteroids(() => {
+        initSolarSystem();
+        
+        // Apply mobile enhancements after system is initialized
+        applyMobileOptimizations();
+        enableDeviceOrientationControls();
+        addPerformanceModeToggle();
+      });
+    }, 1500);
+  }, 2500);
+  
+  // Other existing event listeners...
+});
+
         function getDistance(t1, t2) {
           let dx = t2.clientX - t1.clientX;
           let dy = t2.clientY - t1.clientY;
