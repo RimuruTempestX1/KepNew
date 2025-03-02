@@ -120,15 +120,22 @@
         border: 1px solid rgba(255, 255, 255, 0.1);
         max-height: 40vh;
         overflow-y: auto;
-        /* By default, controls are visible on desktop */
+        position: relative;
+      }
+      /* Close Button inside Controls */
+      #close-controls {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: transparent;
+        border: none;
+        font-size: 18px;
+        color: #fff;
+        cursor: pointer;
       }
       /* Hide controls by default on mobile */
       @media (max-width: 767px) {
         #controls {
-          display: none;
-        }
-        /* Show toggle button on mobile */
-        #toggle-controls {
           display: none;
         }
       }
@@ -263,7 +270,7 @@
       #reset-controls:hover {
         background: #ff9500;
       }
-      /* Show toggle button by default */
+      /* Toggle Controls Button (visible on mobile when controls are hidden) */
       #toggle-controls {
         display: block;
         position: fixed;
@@ -500,12 +507,13 @@
         <button class="nav-button" id="view-solar-system">Solar System</button>
         <button class="nav-button" id="view-kepler-laws">Lessons</button>
       </nav>
-      <!-- Toggle Controls Button (visible on mobile) -->
+      <!-- Toggle Controls Button (visible on mobile when controls are hidden) -->
       <button id="toggle-controls">Show Controls</button>
       <!-- Solar System Visualization -->
       <div id="solar-system"></div>
       <!-- Controls Panel -->
       <div id="controls">
+        <button id="close-controls">x</button>
         <h3>Controls</h3>
         <div class="control-group">
           <label class="control-label">Time Scale</label>
@@ -528,7 +536,7 @@
       </div>
       <!-- Info Panel -->
       <div id="info-panel">
-        <button class="close-btn" style="background-color: transparent; color: white;">&times;</button>
+        <button class="close-btn">&times;</button>
         <div class="info-header">
           <div class="planet-icon" id="selected-planet-icon"></div>
           <h2 class="planet-title" id="selected-planet-name">Object Name</h2>
@@ -651,7 +659,7 @@
       let selectedPlanetKey = null;
       let asteroidBelt;
       const clickableObjects = [];
-      const totalAsteroids = 1;
+      let totalAsteroids = 1;
       const asteroidModels = [];
       const asteroidPaths = [
         "mesh/asteroid.glb",
@@ -928,42 +936,27 @@
           event.preventDefault();
         }, {passive: false});
 
-        // Helper: perform panning (mimicking right-click drag)
         function pan(deltaX, deltaY) {
-          // Compute how much to pan in world space based on the camera's distance
           const offset = new THREE.Vector3();
           offset.copy(camera.position).sub(controls.target);
           const targetDistance = offset.length();
-        
-          // Get dimensions of the renderer's DOM element
           const element = renderer.domElement;
           const panX = (2 * deltaX * targetDistance) / element.clientWidth;
           const panY = (2 * deltaY * targetDistance) / element.clientHeight;
-        
-          // Get camera's right and up directions
           const panOffset = new THREE.Vector3();
           {
             const te = camera.matrix.elements;
-            // Right vector (first column)
             const right = new THREE.Vector3(te[0], te[1], te[2]);
-            // Up vector (second column)
             const up = new THREE.Vector3(te[4], te[5], te[6]);
-            // For horizontal panning, invert deltaX as before.
             panOffset.addScaledVector(right, -panX);
-            // For vertical panning, use the deltaY directly so that
-            // dragging upward (negative deltaY) mimics a right-click–drag upward.
             panOffset.addScaledVector(up, panY);
           }
-          
-          // Update camera position and target
           camera.position.add(panOffset);
           controls.target.add(panOffset);
         }
         
-        // Touchmove event handler – one-finger pan mimics right-click drag:
         solarSystemElem.addEventListener("touchmove", function(event) {
           touchMoveCount++;
-          // One finger: simulate right-click drag pan.
           if (event.touches.length === 1 && isTouching) {
             const touch = event.touches[0];
             const deltaX = touch.clientX - lastTouchX;
@@ -972,7 +965,6 @@
             lastTouchX = touch.clientX;
             lastTouchY = touch.clientY;
           }
-          // Two fingers: improved pinch-to-zoom using a scale ratio.
           else if (event.touches.length === 2) {
             const currentDistance = getDistance(event.touches[0], event.touches[1]);
             if (lastTouchDistance) {
@@ -999,7 +991,6 @@
           event.preventDefault();
         }, {passive: false});
 
-        // Mobile Detection and Optimizations
         const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
         function applyMobileOptimizations() {
           if (isMobile) {
@@ -1014,7 +1005,6 @@
                 object.frustumCulled = true;
               }
             });
-            // Hide controls initially on mobile
             document.getElementById("controls").style.display = "none";
           }
         }
@@ -1175,19 +1165,20 @@
           }
         }
 
-        // Toggle Controls Button for Mobile
+        // Toggle Controls Behavior
         const toggleControlsBtn = document.getElementById("toggle-controls");
         toggleControlsBtn.addEventListener("click", function(){
           const controlsPanel = document.getElementById("controls");
-          if(controlsPanel.style.display === "none" || controlsPanel.style.display === ""){
-            controlsPanel.style.display = "block";
-            this.textContent = "Hide Controls";
-          } else {
-            controlsPanel.style.display = "none";
-            this.textContent = "Show Controls";
-          }
+          controlsPanel.style.display = "block";
+          toggleControlsBtn.style.display = "none";
+        });
+        document.getElementById("close-controls").addEventListener("click", function(){
+          const controlsPanel = document.getElementById("controls");
+          controlsPanel.style.display = "none";
+          toggleControlsBtn.style.display = "block";
         });
 
+        // Main DOMContentLoaded initialization
         document.addEventListener("DOMContentLoaded", function() {
           setTimeout(function() {
             const splashScreen = document.getElementById("splash-screen");
@@ -1210,7 +1201,7 @@
           return Math.sqrt(dx * dx + dy * dy);
         }
 
-        // WASD Continuous Movement
+        // WASD Movement
         const keysPressed = {};
         document.addEventListener("keydown", function(event) {
           keysPressed[event.key.toLowerCase()] = true;
@@ -1218,7 +1209,6 @@
         document.addEventListener("keyup", function(event) {
           keysPressed[event.key.toLowerCase()] = false;
         });
-
         const speedFactor = 5;
         function animate(){
           requestAnimationFrame(animate);
@@ -1285,11 +1275,10 @@
         const infoContent = document.getElementById("planet-info");
         const adjustForm = document.getElementById("adjust-form");
         const nav = document.getElementById("nav");
-        // Hide navigation and controls on mobile when info panel is shown
         if(window.innerWidth < 768) {
           nav.style.display = "none";
           document.getElementById("controls").style.display = "none";
-          document.getElementById("toggle-controls").textContent = "Show Controls";
+          document.getElementById("toggle-controls").style.display = "block";
         }
         let html = "";
         if(userData.type === "planet"){
@@ -1326,16 +1315,316 @@
         infoPanel.classList.add("active");
       }
 
-      document.addEventListener("DOMContentLoaded", function(){
-        setTimeout(function(){
-          const splashScreen = document.getElementById("splash-screen");
-          splashScreen.style.opacity = "0";
-          setTimeout(function(){
-            splashScreen.style.display = "none";
-            preloadAsteroids(initSolarSystem);
-          }, 1500);
-        }, 2500);
+      // Lesson Visualizations
+      let lawVisualizationsInitialized = false;
+      function initLawVisualizations(){
+        if(lawVisualizationsInitialized) return;
+        lawVisualizationsInitialized = true;
+        initNewtonViz();
+        initFirstLawViz();
+        initSecondLawViz();
+        initThirdLawViz();
+        initExampleViz();
+      }
 
+      // Modified createMiniScene to also return container for visibility checks
+      function createMiniScene(containerId){
+        const container = document.getElementById(containerId);
+        const loaderEl = container.querySelector('.loading');
+        if(loaderEl) container.removeChild(loaderEl);
+        const width = container.clientWidth;
+        const height = Math.max(container.clientHeight, 250);
+        const miniRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        miniRenderer.setSize(width, height);
+        container.appendChild(miniRenderer.domElement);
+        const miniScene = new THREE.Scene();
+        const miniCamera = new THREE.PerspectiveCamera(50, width/height, 0.1, 1000);
+        miniCamera.position.set(0, 0, 10);
+        const miniControls = new OrbitControls(miniCamera, miniRenderer.domElement);
+        miniControls.enableDamping = true;
+        miniControls.dampingFactor = 0.05;
+        miniControls.minDistance = 2;
+        miniControls.maxDistance = 50;
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        miniScene.add(ambientLight);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight.position.set(10, 10, 10);
+        miniScene.add(directionalLight);
+        function onResize(){
+          const w = container.clientWidth;
+          const h = Math.max(container.clientHeight, 250);
+          miniCamera.aspect = w/h;
+          miniCamera.updateProjectionMatrix();
+          miniRenderer.setSize(w, h);
+        }
+        window.addEventListener('resize', onResize);
+        function animateMini(){
+          requestAnimationFrame(animateMini);
+          // Only update if container is visible
+          if(!container.offsetParent) return;
+          miniControls.update();
+          miniRenderer.render(miniScene, miniCamera);
+        }
+        animateMini();
+        return { container, miniScene, miniCamera, miniRenderer };
+      }
+
+      function createTextSprite(text){
+        const canvas = document.createElement('canvas');
+        canvas.width = 256;
+        canvas.height = 64;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = 'white';
+        ctx.font = '24px Arial';
+        ctx.fillText(text, 10, 40);
+        return new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(canvas) }));
+      }
+
+      // Newton's Law Visualization
+      function initNewtonViz(){
+        const { container, miniScene, miniRenderer, miniCamera } = createMiniScene("newton-law-viz");
+        const sphereGeom = new THREE.SphereGeometry(0.5, 32, 32);
+        const mat1 = new THREE.MeshStandardMaterial({ color: 0x00ccff });
+        const mat2 = new THREE.MeshStandardMaterial({ color: 0xffcc00 });
+        const mass1 = new THREE.Mesh(sphereGeom, mat1);
+        mass1.position.set(-2, 0, 0);
+        miniScene.add(mass1);
+        const mass2 = new THREE.Mesh(sphereGeom, mat2);
+        mass2.position.set(2, 0, 0);
+        miniScene.add(mass2);
+        const arrow = new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), new THREE.Vector3(-2, 0, 0), 4, 0xff0000);
+        miniScene.add(arrow);
+        const distanceSprite = createTextSprite("Distance: 4 units");
+        distanceSprite.scale.set(4, 1, 1);
+        distanceSprite.position.set(0, -1.5, 0);
+        miniScene.add(distanceSprite);
+        const forceSprite = createTextSprite("Force ∝ 1/r²");
+        forceSprite.scale.set(4, 1, 1);
+        forceSprite.position.set(0, 2.5, 0);
+        miniScene.add(forceSprite);
+        let freeze = false;
+        miniRenderer.domElement.style.cursor = "pointer";
+        miniRenderer.domElement.addEventListener("click", function(){
+          freeze = !freeze;
+          if(freeze){
+            const dist = mass1.position.distanceTo(mass2.position).toFixed(2);
+            const ctx = distanceSprite.material.map.image.getContext('2d');
+            ctx.clearRect(0, 0, 256, 64);
+            ctx.fillStyle = "white";
+            ctx.font = "24px Arial";
+            ctx.fillText("Distance: " + dist + " units", 10, 40);
+            distanceSprite.material.map.needsUpdate = true;
+          }
+        });
+      }
+
+      // Kepler's First Law Visualization
+      function initFirstLawViz(){
+        const { container, miniScene, miniRenderer, miniCamera } = createMiniScene("first-law-viz");
+        const starGeom = new THREE.SphereGeometry(0.4, 32, 32);
+        const starMat = new THREE.MeshStandardMaterial({ color: 0xffdd00 });
+        const star = new THREE.Mesh(starGeom, starMat);
+        star.position.set(-1, 0, 0);
+        miniScene.add(star);
+        const planetGeom = new THREE.SphereGeometry(0.2, 16, 16);
+        const planetMat = new THREE.MeshStandardMaterial({ color: 0x00aaff });
+        const planet = new THREE.Mesh(planetGeom, planetMat);
+        miniScene.add(planet);
+        const a = 2, e = 0.6, b = a * Math.sqrt(1 - e * e);
+        const points = [];
+        for(let i = 0; i <= 100; i++){
+          const theta = (i / 100) * Math.PI * 2;
+          points.push(new THREE.Vector3(a * (Math.cos(theta) - e), b * Math.sin(theta), 0));
+        }
+        const ellipse = new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), new THREE.LineBasicMaterial({ color: 0xffffff }));
+        miniScene.add(ellipse);
+        const paramsSprite = createTextSprite("a = 2, e = 0.6");
+        paramsSprite.scale.set(3, 1, 1);
+        paramsSprite.position.set(0, -2.5, 0);
+        miniScene.add(paramsSprite);
+        let angle = 0;
+        let freeze = false;
+        miniRenderer.domElement.style.cursor = "pointer";
+        miniRenderer.domElement.addEventListener("click", function(){
+          freeze = !freeze;
+          if(freeze){
+            const x = a * (Math.cos(angle) - e).toFixed(2);
+            const y = (b * Math.sin(angle)).toFixed(2);
+            const ctx = paramsSprite.material.map.image.getContext('2d');
+            ctx.clearRect(0, 0, 256, 64);
+            ctx.fillStyle = "white";
+            ctx.font = "24px Arial";
+            ctx.fillText(`a = 2, e = 0.6 | pos: (${x}, ${y})`, 10, 40);
+            paramsSprite.material.map.needsUpdate = true;
+          }
+        });
+        function animateOrbit(){
+          requestAnimationFrame(animateOrbit);
+          if(!freeze){ angle += 0.01; }
+          planet.position.set(a * (Math.cos(angle) - e), b * Math.sin(angle), 0);
+        }
+        animateOrbit();
+      }
+
+      // Kepler's Second Law Visualization
+      function initSecondLawViz(){
+        const { container, miniScene, miniRenderer, miniCamera } = createMiniScene("second-law-viz");
+        const starGeom = new THREE.SphereGeometry(0.4, 32, 32);
+        const starMat = new THREE.MeshStandardMaterial({ color: 0xffdd00 });
+        const star = new THREE.Mesh(starGeom, starMat);
+        miniScene.add(star);
+        const planetGeom = new THREE.SphereGeometry(0.2, 16, 16);
+        const planetMat = new THREE.MeshStandardMaterial({ color: 0x00aaff });
+        const planet = new THREE.Mesh(planetGeom, planetMat);
+        miniScene.add(planet);
+        const a = 3, e = 0.5, b = a * Math.sqrt(1 - e * e);
+        const sectorGeom = new THREE.BufferGeometry();
+        const sectorMat = new THREE.MeshBasicMaterial({ color: 0xff0000, transparent: true, opacity: 0.4, side: THREE.DoubleSide });
+        const sectorMesh = new THREE.Mesh(sectorGeom, sectorMat);
+        miniScene.add(sectorMesh);
+        const areaSprite = createTextSprite("Area: calculating...");
+        areaSprite.scale.set(3, 1, 1);
+        areaSprite.position.set(0, -3, 0);
+        miniScene.add(areaSprite);
+        let angle = 0;
+        let freeze = false;
+        let freezeAngle = 0;
+        miniRenderer.domElement.style.cursor = "pointer";
+        miniRenderer.domElement.addEventListener("click", function(){
+          freeze = !freeze;
+          if(freeze){ freezeAngle = angle; }
+        });
+        function updateSector(){
+          const segments = 30;
+          let vertices = [0, 0, 0];
+          for(let i = 0; i <= segments; i++){
+            const t = freeze ? (freezeAngle * i / segments) : (angle * i / segments);
+            vertices.push(a * (Math.cos(t) - e), b * Math.sin(t), 0);
+          }
+          const vertexArray = new Float32Array(vertices);
+          sectorGeom.setAttribute('position', new THREE.BufferAttribute(vertexArray, 3));
+          sectorGeom.computeVertexNormals();
+          sectorGeom.setDrawRange(0, vertices.length / 3);
+          if(freeze){
+            const frac = freezeAngle / (2 * Math.PI);
+            const area = frac * Math.PI * a * b;
+            const ctx = areaSprite.material.map.image.getContext('2d');
+            ctx.clearRect(0, 0, 256, 64);
+            ctx.fillStyle = "white";
+            ctx.font = "24px Arial";
+            ctx.fillText("Area ≈ " + area.toFixed(2) + " sq. units", 10, 40);
+            areaSprite.material.map.needsUpdate = true;
+          }
+        }
+        function animateOrbit(){
+          requestAnimationFrame(animateOrbit);
+          if(!freeze){ angle += 0.02; }
+          planet.position.set(a * (Math.cos(angle) - e), b * Math.sin(angle), 0);
+          updateSector();
+        }
+        animateOrbit();
+      }
+
+      // Kepler's Third Law Visualization
+      function initThirdLawViz(){
+        const { container, miniScene, miniRenderer, miniCamera } = createMiniScene("third-law-viz");
+        const starGeom = new THREE.SphereGeometry(0.4, 32, 32);
+        const starMat = new THREE.MeshStandardMaterial({ color: 0xffdd00 });
+        const star = new THREE.Mesh(starGeom, starMat);
+        miniScene.add(star);
+        const planet1 = new THREE.Mesh(new THREE.SphereGeometry(0.2, 16, 16), new THREE.MeshStandardMaterial({ color: 0x00aaff }));
+        const planet2 = new THREE.Mesh(new THREE.SphereGeometry(0.2, 16, 16), new THREE.MeshStandardMaterial({ color: 0xff88aa }));
+        miniScene.add(planet1);
+        miniScene.add(planet2);
+        function makeCircle(r){
+          const pts = [];
+          for(let i = 0; i < 64; i++){
+            const theta = (i / 64) * Math.PI * 2;
+            pts.push(new THREE.Vector3(r * Math.cos(theta), r * Math.sin(theta), 0));
+          }
+          pts.push(new THREE.Vector3(r, 0, 0));
+          return new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color: 0xffffff }));
+        }
+        const orbit1Radius = 2, orbit2Radius = 3.5;
+        miniScene.add(makeCircle(orbit1Radius));
+        miniScene.add(makeCircle(orbit2Radius));
+        let angle1 = 0, angle2 = 0;
+        const ratioSprite = createTextSprite("T² ∝ a³");
+        ratioSprite.scale.set(3, 1, 1);
+        ratioSprite.position.set(0, -3, 0);
+        miniScene.add(ratioSprite);
+        let freeze = false;
+        miniRenderer.domElement.style.cursor = "pointer";
+        miniRenderer.domElement.addEventListener("click", function(){
+          freeze = !freeze;
+          if(freeze){
+            const periodRatio = (1 / 0.03 / (1 / (0.03 / Math.pow((orbit2Radius/orbit1Radius), 1.5)))).toFixed(2);
+            const ctx = ratioSprite.material.map.image.getContext('2d');
+            ctx.clearRect(0, 0, 256, 64);
+            ctx.fillStyle = "white";
+            ctx.font = "24px Arial";
+            ctx.fillText("Period Ratio: " + periodRatio, 10, 40);
+            ratioSprite.material.map.needsUpdate = true;
+          }
+        });
+        function animateOrbit(){
+          requestAnimationFrame(animateOrbit);
+          if(!freeze){
+            angle1 += 0.03;
+            angle2 += 0.03 / Math.pow((orbit2Radius/orbit1Radius), 1.5);
+          }
+          planet1.position.set(orbit1Radius * Math.cos(angle1), orbit1Radius * Math.sin(angle1), 0);
+          planet2.position.set(orbit2Radius * Math.cos(angle2), orbit2Radius * Math.sin(angle2), 0);
+        }
+        animateOrbit();
+      }
+
+      // Mercury Example Visualization
+      function initExampleViz(){
+        const { container, miniScene, miniRenderer, miniCamera } = createMiniScene("kepler-example-viz");
+        const star = new THREE.Mesh(new THREE.SphereGeometry(0.4, 32, 32), new THREE.MeshStandardMaterial({ color: 0xffdd00 }));
+        miniScene.add(star);
+        const mercury = new THREE.Mesh(new THREE.SphereGeometry(0.2, 16, 16), new THREE.MeshStandardMaterial({ color: 0xb1b1b1 }));
+        miniScene.add(mercury);
+        const rMercury = 2;
+        function makeCircleLine(r, color){
+          const pts = [];
+          for(let i = 0; i < 64; i++){
+            const theta = (i / 64) * Math.PI * 2;
+            pts.push(new THREE.Vector3(r * Math.cos(theta), r * Math.sin(theta), 0));
+          }
+          pts.push(new THREE.Vector3(r, 0, 0));
+          return new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color }));
+        }
+        miniScene.add(makeCircleLine(rMercury, 0xaaaaaa));
+        const labelSprite = createTextSprite("Mercury: T ≈ 0.253 yrs");
+        labelSprite.scale.set(4, 1, 1);
+        labelSprite.position.set(0, 2.5, 0);
+        miniScene.add(labelSprite);
+        let angle = 0;
+        let freeze = false;
+        miniRenderer.domElement.style.cursor = "pointer";
+        miniRenderer.domElement.addEventListener("click", function(){
+          freeze = !freeze;
+          if(freeze){
+            const ctx = labelSprite.material.map.image.getContext('2d');
+            ctx.clearRect(0, 0, 256, 64);
+            ctx.fillStyle = "white";
+            ctx.font = "24px Arial";
+            ctx.fillText("Mercury: T ≈ 0.253 yrs", 10, 40);
+            labelSprite.material.map.needsUpdate = true;
+          }
+        });
+        function animateMercury(){
+          requestAnimationFrame(animateMercury);
+          if(!freeze){ angle += 0.08; }
+          mercury.position.set(rMercury * Math.cos(angle), rMercury * Math.sin(angle), 0);
+        }
+        animateMercury();
+      }
+
+      // View toggle for Solar System and Lessons
+      document.addEventListener("DOMContentLoaded", function(){
         document.getElementById("view-solar-system").addEventListener("click", function(){
           document.getElementById("solar-system").style.display = "block";
           document.getElementById("kepler-laws").style.display = "none";
@@ -1351,7 +1640,7 @@
           document.getElementById("nav").style.display = "block";
           initLawVisualizations();
         });
-        document.querySelector(".close-btn").addEventListener("click", function(){
+        document.querySelector("#info-panel .close-btn").addEventListener("click", function(){
           document.getElementById("info-panel").classList.remove("active");
           if(window.innerWidth < 768) {
             document.getElementById("nav").style.display = "block";
@@ -1413,313 +1702,6 @@
           });
         });
       });
-
-      // Lesson Visualizations
-      let lawVisualizationsInitialized = false;
-      function initLawVisualizations(){
-        if(lawVisualizationsInitialized) return;
-        lawVisualizationsInitialized = true;
-        initNewtonViz();
-        initFirstLawViz();
-        initSecondLawViz();
-        initThirdLawViz();
-        initExampleViz();
-      }
-
-      function createMiniScene(containerId){
-        const container = document.getElementById(containerId);
-        const loaderEl = container.querySelector('.loading');
-        if(loaderEl) container.removeChild(loaderEl);
-        const width = container.clientWidth;
-        const height = Math.max(container.clientHeight, 250);
-        const miniRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-        miniRenderer.setSize(width, height);
-        container.appendChild(miniRenderer.domElement);
-        const miniScene = new THREE.Scene();
-        const miniCamera = new THREE.PerspectiveCamera(50, width/height, 0.1, 1000);
-        miniCamera.position.set(0, 0, 10);
-        const miniControls = new OrbitControls(miniCamera, miniRenderer.domElement);
-        miniControls.enableDamping = true;
-        miniControls.dampingFactor = 0.05;
-        miniControls.minDistance = 2;
-        miniControls.maxDistance = 50;
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-        miniScene.add(ambientLight);
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-        directionalLight.position.set(10, 10, 10);
-        miniScene.add(directionalLight);
-        function onResize(){
-          const w = container.clientWidth;
-          const h = Math.max(container.clientHeight, 250);
-          miniCamera.aspect = w/h;
-          miniCamera.updateProjectionMatrix();
-          miniRenderer.setSize(w, h);
-        }
-        window.addEventListener('resize', onResize);
-        function animateMini(){
-          requestAnimationFrame(animateMini);
-          miniControls.update();
-          miniRenderer.render(miniScene, miniCamera);
-        }
-        animateMini();
-        return { miniScene, miniCamera, miniRenderer };
-      }
-
-      function createTextSprite(text){
-        const canvas = document.createElement('canvas');
-        canvas.width = 256;
-        canvas.height = 64;
-        const ctx = canvas.getContext('2d');
-        ctx.fillStyle = 'white';
-        ctx.font = '24px Arial';
-        ctx.fillText(text, 10, 40);
-        return new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(canvas) }));
-      }
-
-      // Newton's Law Visualization
-      function initNewtonViz(){
-        const { miniScene, miniRenderer } = createMiniScene("newton-law-viz");
-        const sphereGeom = new THREE.SphereGeometry(0.5, 32, 32);
-        const mat1 = new THREE.MeshStandardMaterial({ color: 0x00ccff });
-        const mat2 = new THREE.MeshStandardMaterial({ color: 0xffcc00 });
-        const mass1 = new THREE.Mesh(sphereGeom, mat1);
-        mass1.position.set(-2, 0, 0);
-        miniScene.add(mass1);
-        const mass2 = new THREE.Mesh(sphereGeom, mat2);
-        mass2.position.set(2, 0, 0);
-        miniScene.add(mass2);
-        const arrow = new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), new THREE.Vector3(-2, 0, 0), 4, 0xff0000);
-        miniScene.add(arrow);
-        const distanceSprite = createTextSprite("Distance: 4 units");
-        distanceSprite.scale.set(4, 1, 1);
-        distanceSprite.position.set(0, -1.5, 0);
-        miniScene.add(distanceSprite);
-        const forceSprite = createTextSprite("Force ∝ 1/r²");
-        forceSprite.scale.set(4, 1, 1);
-        forceSprite.position.set(0, 2.5, 0);
-        miniScene.add(forceSprite);
-        let freeze = false;
-        miniRenderer.domElement.style.cursor = "pointer";
-        miniRenderer.domElement.addEventListener("click", function(){
-          freeze = !freeze;
-          if(freeze){
-            const dist = mass1.position.distanceTo(mass2.position).toFixed(2);
-            const ctx = distanceSprite.material.map.image.getContext('2d');
-            ctx.clearRect(0, 0, 256, 64);
-            ctx.fillStyle = "white";
-            ctx.font = "24px Arial";
-            ctx.fillText("Distance: " + dist + " units", 10, 40);
-            distanceSprite.material.map.needsUpdate = true;
-          }
-        });
-      }
-
-      // Kepler's First Law Visualization
-      function initFirstLawViz(){
-        const { miniScene, miniRenderer } = createMiniScene("first-law-viz");
-        const starGeom = new THREE.SphereGeometry(0.4, 32, 32);
-        const starMat = new THREE.MeshStandardMaterial({ color: 0xffdd00 });
-        const star = new THREE.Mesh(starGeom, starMat);
-        star.position.set(-1, 0, 0);
-        miniScene.add(star);
-        const planetGeom = new THREE.SphereGeometry(0.2, 16, 16);
-        const planetMat = new THREE.MeshStandardMaterial({ color: 0x00aaff });
-        const planet = new THREE.Mesh(planetGeom, planetMat);
-        miniScene.add(planet);
-        const a = 2, e = 0.6, b = a * Math.sqrt(1 - e * e);
-        const points = [];
-        for(let i = 0; i <= 100; i++){
-          const theta = (i / 100) * Math.PI * 2;
-          points.push(new THREE.Vector3(a * (Math.cos(theta) - e), b * Math.sin(theta), 0));
-        }
-        const ellipse = new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), new THREE.LineBasicMaterial({ color: 0xffffff }));
-        miniScene.add(ellipse);
-        const paramsSprite = createTextSprite("a = 2, e = 0.6");
-        paramsSprite.scale.set(3, 1, 1);
-        paramsSprite.position.set(0, -2.5, 0);
-        miniScene.add(paramsSprite);
-        let angle = 0;
-        let freeze = false;
-        miniRenderer.domElement.style.cursor = "pointer";
-        miniRenderer.domElement.addEventListener("click", function(){
-          freeze = !freeze;
-          if(freeze){
-            const x = a * (Math.cos(angle) - e).toFixed(2);
-            const y = (b * Math.sin(angle)).toFixed(2);
-            const ctx = paramsSprite.material.map.image.getContext('2d');
-            ctx.clearRect(0, 0, 256, 64);
-            ctx.fillStyle = "white";
-            ctx.font = "24px Arial";
-            ctx.fillText(`a = 2, e = 0.6 | pos: (${x}, ${y})`, 10, 40);
-            paramsSprite.material.map.needsUpdate = true;
-          }
-        });
-        function animateOrbit(){
-          requestAnimationFrame(animateOrbit);
-          if(!freeze){ angle += 0.01; }
-          planet.position.set(a * (Math.cos(angle) - e), b * Math.sin(angle), 0);
-        }
-        animateOrbit();
-      }
-
-      // Kepler's Second Law Visualization
-      function initSecondLawViz(){
-        const { miniScene, miniRenderer } = createMiniScene("second-law-viz");
-        const starGeom = new THREE.SphereGeometry(0.4, 32, 32);
-        const starMat = new THREE.MeshStandardMaterial({ color: 0xffdd00 });
-        const star = new THREE.Mesh(starGeom, starMat);
-        miniScene.add(star);
-        const planetGeom = new THREE.SphereGeometry(0.2, 16, 16);
-        const planetMat = new THREE.MeshStandardMaterial({ color: 0x00aaff });
-        const planet = new THREE.Mesh(planetGeom, planetMat);
-        miniScene.add(planet);
-        const a = 3, e = 0.5, b = a * Math.sqrt(1 - e * e);
-        const sectorGeom = new THREE.BufferGeometry();
-        const sectorMat = new THREE.MeshBasicMaterial({ color: 0xff0000, transparent: true, opacity: 0.4, side: THREE.DoubleSide });
-        const sectorMesh = new THREE.Mesh(sectorGeom, sectorMat);
-        miniScene.add(sectorMesh);
-        const areaSprite = createTextSprite("Area: calculating...");
-        areaSprite.scale.set(3, 1, 1);
-        areaSprite.position.set(0, -3, 0);
-        miniScene.add(areaSprite);
-        let angle = 0;
-        let freeze = false;
-        let freezeAngle = 0;
-        miniRenderer.domElement.style.cursor = "pointer";
-        miniRenderer.domElement.addEventListener("click", function(){
-          freeze = !freeze;
-          if(freeze){ freezeAngle = angle; }
-        });
-        function updateSector(){
-          const segments = 30;
-          let vertices = [0, 0, 0];
-          for(let i = 0; i <= segments; i++){
-            const t = freeze ? (freezeAngle * i / segments) : (angle * i / segments);
-            vertices.push(a * (Math.cos(t) - e), b * Math.sin(t), 0);
-          }
-          const vertexArray = new Float32Array(vertices);
-          sectorGeom.setAttribute('position', new THREE.BufferAttribute(vertexArray, 3));
-          sectorGeom.computeVertexNormals();
-          sectorGeom.setDrawRange(0, vertices.length / 3);
-          if(freeze){
-            const frac = freezeAngle / (2 * Math.PI);
-            const area = frac * Math.PI * a * b;
-            const ctx = areaSprite.material.map.image.getContext('2d');
-            ctx.clearRect(0, 0, 256, 64);
-            ctx.fillStyle = "white";
-            ctx.font = "24px Arial";
-            ctx.fillText("Area ≈ " + area.toFixed(2) + " sq. units", 10, 40);
-            areaSprite.material.map.needsUpdate = true;
-          }
-        }
-        function animateOrbit(){
-          requestAnimationFrame(animateOrbit);
-          if(!freeze){ angle += 0.02; }
-          planet.position.set(a * (Math.cos(angle) - e), b * Math.sin(angle), 0);
-          updateSector();
-        }
-        animateOrbit();
-      }
-
-      // Kepler's Third Law Visualization
-      function initThirdLawViz(){
-        const { miniScene, miniRenderer } = createMiniScene("third-law-viz");
-        const starGeom = new THREE.SphereGeometry(0.4, 32, 32);
-        const starMat = new THREE.MeshStandardMaterial({ color: 0xffdd00 });
-        const star = new THREE.Mesh(starGeom, starMat);
-        miniScene.add(star);
-        const planet1 = new THREE.Mesh(new THREE.SphereGeometry(0.2, 16, 16), new THREE.MeshStandardMaterial({ color: 0x00aaff }));
-        const planet2 = new THREE.Mesh(new THREE.SphereGeometry(0.2, 16, 16), new THREE.MeshStandardMaterial({ color: 0xff88aa }));
-        miniScene.add(planet1);
-        miniScene.add(planet2);
-        function makeCircle(r){
-          const pts = [];
-          for(let i = 0; i < 64; i++){
-            const theta = (i / 64) * Math.PI * 2;
-            pts.push(new THREE.Vector3(r * Math.cos(theta), r * Math.sin(theta), 0));
-          }
-          pts.push(new THREE.Vector3(r, 0, 0));
-          return new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color: 0xffffff }));
-        }
-        const orbit1Radius = 2, orbit2Radius = 3.5;
-        miniScene.add(makeCircle(orbit1Radius));
-        miniScene.add(makeCircle(orbit2Radius));
-        let angle1 = 0, angle2 = 0;
-        const ratio = Math.pow((orbit2Radius / orbit1Radius), 1.5);
-        const speed1 = 0.03, speed2 = speed1 / ratio;
-        const ratioSprite = createTextSprite("T² ∝ a³");
-        ratioSprite.scale.set(3, 1, 1);
-        ratioSprite.position.set(0, -3, 0);
-        miniScene.add(ratioSprite);
-        let freeze = false;
-        miniRenderer.domElement.style.cursor = "pointer";
-        miniRenderer.domElement.addEventListener("click", function(){
-          freeze = !freeze;
-          if(freeze){
-            const periodRatio = (1 / speed2 / (1 / speed1)).toFixed(2);
-            const ctx = ratioSprite.material.map.image.getContext('2d');
-            ctx.clearRect(0, 0, 256, 64);
-            ctx.fillStyle = "white";
-            ctx.font = "24px Arial";
-            ctx.fillText("Period Ratio: " + periodRatio, 10, 40);
-            ratioSprite.material.map.needsUpdate = true;
-          }
-        });
-        function animateOrbit(){
-          requestAnimationFrame(animateOrbit);
-          if(!freeze){
-            angle1 += speed1;
-            angle2 += speed2;
-          }
-          planet1.position.set(orbit1Radius * Math.cos(angle1), orbit1Radius * Math.sin(angle1), 0);
-          planet2.position.set(orbit2Radius * Math.cos(angle2), orbit2Radius * Math.sin(angle2), 0);
-        }
-        animateOrbit();
-      }
-
-      // Mercury Example Visualization
-      function initExampleViz(){
-        const { miniScene, miniRenderer } = createMiniScene("kepler-example-viz");
-        const star = new THREE.Mesh(new THREE.SphereGeometry(0.4, 32, 32), new THREE.MeshStandardMaterial({ color: 0xffdd00 }));
-        miniScene.add(star);
-        const mercury = new THREE.Mesh(new THREE.SphereGeometry(0.2, 16, 16), new THREE.MeshStandardMaterial({ color: 0xb1b1b1 }));
-        miniScene.add(mercury);
-        const rMercury = 2;
-        function makeCircleLine(r, color){
-          const pts = [];
-          for(let i = 0; i < 64; i++){
-            const theta = (i / 64) * Math.PI * 2;
-            pts.push(new THREE.Vector3(r * Math.cos(theta), r * Math.sin(theta), 0));
-          }
-          pts.push(new THREE.Vector3(r, 0, 0));
-          return new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color }));
-        }
-        miniScene.add(makeCircleLine(rMercury, 0xaaaaaa));
-        const labelSprite = createTextSprite("Mercury: T ≈ 0.253 yrs");
-        labelSprite.scale.set(4, 1, 1);
-        labelSprite.position.set(0, 2.5, 0);
-        miniScene.add(labelSprite);
-        let angle = 0;
-        let freeze = false;
-        miniRenderer.domElement.style.cursor = "pointer";
-        miniRenderer.domElement.addEventListener("click", function(){
-          freeze = !freeze;
-          if(freeze){
-            const ctx = labelSprite.material.map.image.getContext('2d');
-            ctx.clearRect(0, 0, 256, 64);
-            ctx.fillStyle = "white";
-            ctx.font = "24px Arial";
-            ctx.fillText("Mercury: T ≈ 0.253 yrs", 10, 40);
-            labelSprite.material.map.needsUpdate = true;
-          }
-        });
-        function animateMercury(){
-          requestAnimationFrame(animateMercury);
-          if(!freeze){ angle += 0.08; }
-          mercury.position.set(rMercury * Math.cos(angle), rMercury * Math.sin(angle), 0);
-        }
-        animateMercury();
-      }
     </script>
   </body>
 </html>
