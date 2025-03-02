@@ -119,7 +119,6 @@
         border: 1px solid rgba(255, 255, 255, 0.1);
         max-height: 40vh;
         overflow-y: auto;
-        /* By default, controls are visible on desktop */
       }
       /* Hide controls by default on mobile */
       @media (max-width: 767px) {
@@ -268,6 +267,18 @@
       }
       #toggle-controls:hover {
         background: #ff9500;
+      }
+      /* Close Button for Info Panel */
+      .close-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: transparent;
+        border: none;
+        font-size: 24px;
+        color: white;
+        cursor: pointer;
+        z-index: 10;
       }
       /* Navigation */
       nav {
@@ -486,9 +497,9 @@
       <nav id="nav">
         <button class="nav-button" id="view-solar-system">Solar System</button>
         <button class="nav-button" id="view-kepler-laws">Lessons</button>
-      </nav>
       <!-- Toggle Controls Button (visible on mobile) -->
-      <button id="toggle-controls">Show Controls</button>
+      <button id="toggle-controls" class ="nav-button">Show Controls</button>
+      </nav>
       <!-- Solar System Visualization -->
       <div id="solar-system"></div>
       <!-- Controls Panel -->
@@ -515,7 +526,7 @@
       </div>
       <!-- Info Panel -->
       <div id="info-panel">
-        <button class="close-btn" style="background-color: transparent; color: white;">&times;</button>
+        <button class="close-btn">&times;</button>
         <div class="info-header">
           <div class="planet-icon" id="selected-planet-icon"></div>
           <h2 class="planet-title" id="selected-planet-name">Object Name</h2>
@@ -1152,12 +1163,7 @@
             splashScreen.style.opacity = "0";
             setTimeout(function() {
               splashScreen.style.display = "none";
-              preloadAsteroids(() => {
-                initSolarSystem();
-                applyMobileOptimizations();
-                enableDeviceOrientationControls();
-                addPerformanceModeToggle();
-              });
+              preloadAsteroids(initSolarSystem);
             }, 1500);
           }, 2500);
         });
@@ -1284,92 +1290,13 @@
         infoPanel.classList.add("active");
       }
 
-      document.addEventListener("DOMContentLoaded", function(){
-        setTimeout(function(){
-          const splashScreen = document.getElementById("splash-screen");
-          splashScreen.style.opacity = "0";
-          setTimeout(function(){
-            splashScreen.style.display = "none";
-            preloadAsteroids(initSolarSystem);
-          }, 1500);
-        }, 2500);
-
-        document.getElementById("view-solar-system").addEventListener("click", function(){
-          document.getElementById("solar-system").style.display = "block";
-          document.getElementById("kepler-laws").style.display = "none";
-          document.getElementById("controls").style.display = "block";
-          document.getElementById("nav").style.display = "block";
-          document.getElementById("nav").classList.remove("lessons");
-        });
-        document.getElementById("view-kepler-laws").addEventListener("click", function(){
-          document.getElementById("solar-system").style.display = "none";
-          document.getElementById("kepler-laws").style.display = "block";
-          document.getElementById("controls").style.display = "none";
-          document.getElementById("nav").classList.add("lessons");
-          document.getElementById("nav").style.display = "block";
-          initLawVisualizations();
-        });
-        document.querySelector(".close-btn").addEventListener("click", function(){
+      // Updated close button event handler (works on both desktop and mobile)
+      document.querySelector(".close-btn").addEventListener("click", function(){
           document.getElementById("info-panel").classList.remove("active");
+          // On mobile, re-show navigation if needed
           if(window.innerWidth < 768) {
             document.getElementById("nav").style.display = "block";
           }
-        });
-        document.getElementById("time-scale").addEventListener("input", function(){
-          document.getElementById("time-value").textContent = this.value + "x";
-        });
-        document.getElementById("eccentricity").addEventListener("input", function(){
-          document.getElementById("eccentricity-value").textContent = this.value;
-          Object.keys(planetsGlobal).forEach(key => {
-            planetsGlobal[key].data.eccentricity = parseFloat(this.value);
-            updateOrbitLine(key);
-          });
-        });
-        document.getElementById("semi-major").addEventListener("input", function(){
-          document.getElementById("semi-major-value").textContent = this.value + "x";
-          Object.keys(planetsGlobal).forEach(key => updateOrbitLine(key));
-        });
-        document.getElementById("adjust-eccentricity").addEventListener("input", function(){
-          if(selectedPlanetKey && planetsGlobal[selectedPlanetKey]){
-            const newEcc = parseFloat(this.value);
-            planetsGlobal[selectedPlanetKey].data.eccentricity = newEcc;
-            document.getElementById("adjust-ecc-value").textContent = newEcc;
-            updateOrbitLine(selectedPlanetKey);
-          }
-        });
-        document.getElementById("adjust-semi-major").addEventListener("input", function(){
-          if(selectedPlanetKey && planetsGlobal[selectedPlanetKey]){
-            const newMultiplier = parseFloat(this.value);
-            planetsGlobal[selectedPlanetKey].data.semiMajorMultiplier = newMultiplier;
-            document.getElementById("adjust-semi-value").textContent = newMultiplier + "x";
-            updateOrbitLine(selectedPlanetKey);
-          }
-        });
-        document.getElementById("reset-adjust").addEventListener("click", function(){
-          if(selectedPlanetKey && planetsGlobal[selectedPlanetKey]){
-            planetsGlobal[selectedPlanetKey].data.eccentricity = DEFAULT_ECCENTRICITY;
-            planetsGlobal[selectedPlanetKey].data.semiMajorMultiplier = 1;
-            document.getElementById("adjust-eccentricity").value = DEFAULT_ECCENTRICITY;
-            document.getElementById("adjust-semi-major").value = 1;
-            document.getElementById("adjust-ecc-value").textContent = DEFAULT_ECCENTRICITY;
-            document.getElementById("adjust-semi-value").textContent = "1x";
-            updateOrbitLine(selectedPlanetKey);
-            showObjectInfo({ type: "planet", key: selectedPlanetKey });
-          }
-        });
-        document.getElementById("reset-controls").addEventListener("click", function(){
-          document.getElementById("time-scale").value = DEFAULT_TIME_SCALE;
-          document.getElementById("time-value").textContent = DEFAULT_TIME_SCALE + "x";
-          document.getElementById("eccentricity").value = DEFAULT_ECCENTRICITY;
-          document.getElementById("eccentricity-value").textContent = DEFAULT_ECCENTRICITY;
-          document.getElementById("semi-major").value = DEFAULT_SEMI_MAJOR_MULTIPLIER;
-          document.getElementById("semi-major-value").textContent = DEFAULT_SEMI_MAJOR_MULTIPLIER + "x";
-          Object.keys(planetsGlobal).forEach(key => {
-            planetsGlobal[key].data.eccentricity = planetData[key].eccentricity;
-            planetsGlobal[key].data.semiMajorMultiplier = 1;
-            updateOrbitLine(key);
-          });
-        });
       });
 
       // Lesson Visualizations
