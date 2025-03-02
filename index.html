@@ -928,33 +928,36 @@
         }, {passive: false});
 
         solarSystemElem.addEventListener("touchmove", function(event) {
-          touchMoveCount++;
-          if(event.touches.length === 1 && isTouching){
-            let touch = event.touches[0];
-            let deltaX = touch.clientX - lastTouchX;
-            let deltaY = touch.clientY - lastTouchY;
-            const panFactor = 0.1 * (camera.position.z / 100);
-            if(Math.abs(deltaX) > 2 || Math.abs(deltaY) > 2) {
-              camera.position.x -= deltaX * panFactor;
-              camera.position.y += deltaY * panFactor * 0.5;
-            }
-            lastTouchX = touch.clientX;
-            lastTouchY = touch.clientY;
-          } else if(event.touches.length === 2){
-            let currentDistance = getDistance(event.touches[0], event.touches[1]);
-            if(lastTouchDistance){
-              let zoomDelta = currentDistance - lastTouchDistance;
-              const zoomFactor = 0.1;
-              const minDistance = controls.minDistance;
-              const maxDistance = controls.maxDistance;
-              let newZ = camera.position.z - zoomDelta * zoomFactor;
-              newZ = Math.max(minDistance, Math.min(maxDistance, newZ));
-              camera.position.z = newZ;
-            }
-            lastTouchDistance = currentDistance;
+        touchMoveCount++;
+        // One-finger pan: Invert the movement directions.
+        if(event.touches.length === 1 && isTouching) {
+          const touch = event.touches[0];
+          const deltaX = touch.clientX - lastTouchX;
+          const deltaY = touch.clientY - lastTouchY;
+          // Calculate a pan factor based on camera distance.
+          const panFactor = 0.1 * (camera.position.z / 100);
+          // Invert directions: move camera right when user scrolls left, etc.
+          camera.position.x += deltaX * panFactor;      // Invert: add instead of subtract.
+          camera.position.y -= deltaY * panFactor * 0.5;  // Invert: subtract instead of adding.
+          lastTouchX = touch.clientX;
+          lastTouchY = touch.clientY;
+        }
+        // Two-finger pinch-to-zoom: use ratio for a smoother zoom.
+        else if(event.touches.length === 2) {
+          const currentDistance = getDistance(event.touches[0], event.touches[1]);
+          if(lastTouchDistance) {
+            // Calculate the scale factor from the change in distance.
+            const scale = currentDistance / lastTouchDistance;
+            // Adjust the camera's z position by dividing by the scale factor.
+            let newZ = camera.position.z / scale;
+            // Clamp the new z value.
+            newZ = Math.max(controls.minDistance, Math.min(controls.maxDistance, newZ));
+            camera.position.z = newZ;
           }
-          event.preventDefault();
-        }, {passive: false});
+          lastTouchDistance = currentDistance;
+        }
+        event.preventDefault();
+      }, {passive: false});
 
         solarSystemElem.addEventListener("touchend", function(event) {
           const touchDuration = Date.now() - touchStartTime;
