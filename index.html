@@ -58,9 +58,18 @@
         animation: pulse 2s infinite;
       }
       @keyframes pulse {
-        0% { transform: scale(0.95); box-shadow: 0 0 40px rgba(255, 94, 0, 0.5); }
-        50% { transform: scale(1.05); box-shadow: 0 0 70px rgba(255, 94, 0, 0.7); }
-        100% { transform: scale(0.95); box-shadow: 0 0 40px rgba(255, 94, 0, 0.5); }
+        0% {
+          transform: scale(0.95);
+          box-shadow: 0 0 40px rgba(255, 94, 0, 0.5);
+        }
+        50% {
+          transform: scale(1.05);
+          box-shadow: 0 0 70px rgba(255, 94, 0, 0.7);
+        }
+        100% {
+          transform: scale(0.95);
+          box-shadow: 0 0 40px rgba(255, 94, 0, 0.5);
+        }
       }
       .splash-text {
         margin-top: 20px;
@@ -73,7 +82,9 @@
         padding: 0 15px;
       }
       @keyframes fadeIn {
-        to { opacity: 1; }
+        to {
+          opacity: 1;
+        }
       }
       /* Main Container */
       .container {
@@ -108,12 +119,17 @@
         border: 1px solid rgba(255, 255, 255, 0.1);
         max-height: 40vh;
         overflow-y: auto;
+        /* By default, controls are visible on desktop */
       }
       /* Hide controls by default on mobile */
       @media (max-width: 767px) {
-        #controls { display: none; }
+        #controls {
+          display: none;
+        }
         /* Show toggle button on mobile */
-        #toggle-controls { display: block; }
+        #toggle-controls {
+          display: block;
+        }
       }
       #controls h3 {
         margin-bottom: 10px;
@@ -121,7 +137,9 @@
         padding-bottom: 8px;
         font-size: 16px;
       }
-      .control-group { margin-bottom: 12px; }
+      .control-group {
+        margin-bottom: 12px;
+      }
       .control-label {
         display: block;
         margin-bottom: 4px;
@@ -172,7 +190,9 @@
         transition: transform 0.4s ease;
         z-index: 9;
       }
-      #info-panel.active { transform: translateX(0); }
+      #info-panel.active {
+        transform: translateX(0);
+      }
       .info-header {
         display: flex;
         align-items: center;
@@ -190,14 +210,24 @@
         object-fit: cover;
         overflow: hidden;
       }
-      .planet-title { font-size: 20px; margin: 0; }
-      .info-content p { margin-bottom: 10px; line-height: 1.5; font-size: 14px; }
+      .planet-title {
+        font-size: 20px;
+        margin: 0;
+      }
+      .info-content p {
+        margin-bottom: 10px;
+        line-height: 1.5;
+        font-size: 14px;
+      }
       .adjust-parameters {
         margin-top: 15px;
         padding-top: 10px;
         border-top: 1px solid rgba(255, 255, 255, 0.1);
       }
-      .adjust-parameters label { font-size: 13px; color: #ccc; }
+      .adjust-parameters label {
+        font-size: 13px;
+        color: #ccc;
+      }
       .adjust-parameters input[type="range"] {
         width: 100%;
         margin: 5px 0 10px;
@@ -217,10 +247,12 @@
         margin-top: 5px;
       }
       .adjust-parameters button:hover,
-      #reset-controls:hover { background: #ff9500; }
+      #reset-controls:hover {
+        background: #ff9500;
+      }
       /* Toggle Controls Button (Mobile) */
       #toggle-controls {
-        display: none;
+        display: none; /* shown only on mobile via media query */
         position: fixed;
         bottom: 10px;
         right: 10px;
@@ -234,18 +266,8 @@
         transition: background 0.3s;
         font-size: 14px;
       }
-      #toggle-controls:hover { background: #ff9500; }
-      /* Close Button for Info Panel */
-      .close-btn {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        background: transparent;
-        border: none;
-        font-size: 24px;
-        color: white;
-        cursor: pointer;
-        z-index: 10;
+      #toggle-controls:hover {
+        background: #ff9500;
       }
       /* Navigation */
       nav {
@@ -287,7 +309,9 @@
         display: inline-block;
       }
       .nav-button:hover,
-      .nav-button:active { background: rgba(0, 20, 60, 0.9); }
+      .nav-button:active {
+        background: rgba(0, 20, 60, 0.9);
+      }
       /* Lessons Section */
       #kepler-laws {
         display: none;
@@ -337,7 +361,7 @@
         position: relative;
         overflow: hidden;
       }
-      .ing {
+      .loading {
         border: 4px solid rgba(255, 255, 255, 0.3);
         border-radius: 50%;
         border-top: 4px solid #fff;
@@ -351,42 +375,100 @@
         transform: translate(-50%, -50%);
       }
       @keyframes spin {
-        0% { transform: translate(-50%, -50%) rotate(0deg); }
-        100% { transform: translate(-50%, -50%) rotate(360deg); }
+        0% {
+          transform: translate(-50%, -50%) rotate(0deg);
+        }
+        100% {
+          transform: translate(-50%, -50%) rotate(360deg);
+        }
       }
       /* Media Queries for devices */
       @media (max-width: 360px) {
-        #splash-logo { width: 120px; height: 120px; }
-        .splash-text { font-size: 18px; letter-spacing: 3px; }
-        #controls h3, .planet-title { font-size: 16px; }
-        .nav-button { padding: 8px 12px; font-size: 13px; }
-        .control-label, .adjust-parameters label, .info-content p { font-size: 12px; }
+        #splash-logo {
+          width: 120px;
+          height: 120px;
+        }
+        .splash-text {
+          font-size: 18px;
+          letter-spacing: 3px;
+        }
+        #controls h3,
+        .planet-title {
+          font-size: 16px;
+        }
+        .nav-button {
+          padding: 8px 12px;
+          font-size: 13px;
+        }
+        .control-label,
+        .adjust-parameters label,
+        .info-content p {
+          font-size: 12px;
+        }
       }
       @media (min-width: 361px) and (max-width: 767px) {
-        #controls { max-height: 45vh; }
-        .nav-button { padding: 10px 14px; }
-        #info-panel { max-height: 65vh; }
+        #controls {
+          max-height: 45vh;
+        }
+        .nav-button {
+          padding: 10px 14px;
+        }
+        #info-panel {
+          max-height: 65vh;
+        }
       }
       @media (min-width: 768px) {
-        #controls { width: 300px; left: 20px; right: auto; max-height: 80vh; }
-        #info-panel { width: 350px; right: 20px; top: 20px; }
-        .law-content { flex-direction: row; }
-        nav { left: 20px; top: 20px; }
-        .splash-text { font-size: 28px; letter-spacing: 5px; }
-        #splash-logo { width: 180px; height: 180px; }
+        #controls {
+          width: 300px;
+          left: 20px;
+          right: auto;
+          max-height: 80vh;
+        }
+        #info-panel {
+          width: 350px;
+          right: 20px;
+          top: 20px;
+        }
+        .law-content {
+          flex-direction: row;
+        }
+        nav {
+          left: 20px;
+          top: 20px;
+        }
+        .splash-text {
+          font-size: 28px;
+          letter-spacing: 5px;
+        }
+        #splash-logo {
+          width: 180px;
+          height: 180px;
+        }
       }
       @supports (padding: max(0px)) {
-        nav, #controls, #info-panel {
+        nav,
+        #controls,
+        #info-panel {
           padding-left: max(12px, env(safe-area-inset-left));
           padding-right: max(12px, env(safe-area-inset-right));
         }
-        nav.lessons { padding-top: max(8px, env(safe-area-inset-top)); }
-        #controls { padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+        nav.lessons {
+          padding-top: max(8px, env(safe-area-inset-top));
+        }
+        #controls {
+          padding-bottom: max(12px, env(safe-area-inset-bottom));
+        }
       }
       @supports (-webkit-touch-callout: none) {
-        .container, #solar-system { height: -webkit-fill-available; }
+        .container,
+        #solar-system {
+          height: -webkit-fill-available;
+        }
       }
-      .nav-button, #controls, #info-panel, .control-label {
+      .nav-button,
+      #controls,
+      #info-panel,
+      .control-label {
         -webkit-user-select: none;
         user-select: none;
       }
@@ -404,9 +486,9 @@
       <nav id="nav">
         <button class="nav-button" id="view-solar-system">Solar System</button>
         <button class="nav-button" id="view-kepler-laws">Lessons</button>
-        <!-- Toggle Controls Button (visible on mobile) -->
-        <button id="toggle-controls" class="nav-button">Show Controls</button>
       </nav>
+      <!-- Toggle Controls Button (visible on mobile) -->
+      <button id="toggle-controls">Show Controls</button>
       <!-- Solar System Visualization -->
       <div id="solar-system"></div>
       <!-- Controls Panel -->
@@ -433,7 +515,7 @@
       </div>
       <!-- Info Panel -->
       <div id="info-panel">
-        <button class="close-btn">&times;</button>
+        <button class="close-btn" style="background-color: transparent; color: white;">&times;</button>
         <div class="info-header">
           <div class="planet-icon" id="selected-planet-icon"></div>
           <h2 class="planet-title" id="selected-planet-name">Object Name</h2>
@@ -638,7 +720,9 @@
         const countPerModel = Math.floor(totalAsteroids / asteroidModels.length);
         asteroidModels.forEach(model => {
           let baseMesh;
-          model.traverse(child => { if(child.isMesh && !baseMesh) baseMesh = child; });
+          model.traverse(child => {
+            if(child.isMesh && !baseMesh) baseMesh = child;
+          });
           if (!baseMesh) return;
           const geometry = baseMesh.geometry;
           const material = baseMesh.material.clone();
@@ -787,34 +871,6 @@
           renderer.setSize(window.innerWidth, window.innerHeight);
           composer.setSize(window.innerWidth, window.innerHeight);
         });
-
-        window.addEventListener("load", function() {
-  setTimeout(function() {
-    const splashScreen = document.getElementById("splash-screen");
-    splashScreen.style.opacity = "0";
-    setTimeout(function() {
-      splashScreen.style.display = "none";
-      preloadAsteroids(initSolarSystem);
-    }, 1500);
-  }, 2500);
-});
-function startSplashFadeOut() {
-  setTimeout(function() {
-    const splashScreen = document.getElementById("splash-screen");
-    splashScreen.style.opacity = "0";
-    setTimeout(function() {
-      splashScreen.style.display = "none";
-      preloadAsteroids(initSolarSystem);
-    }, 1500);
-  }, 2500);
-}
-
-if (document.readyState === "complete" || document.readyState === "interactive") {
-  startSplashFadeOut();
-} else {
-  document.addEventListener("DOMContentLoaded", startSplashFadeOut);
-}
-
 
         // Raycaster for detecting interactions
         const raycaster = new THREE.Raycaster();
@@ -1051,14 +1107,26 @@ if (document.readyState === "complete" || document.readyState === "interactive")
             performanceToggle.addEventListener('click', function() {
               highPerformance = !highPerformance;
               if (highPerformance) {
-                if (asteroidBelt) { asteroidBelt.visible = false; }
+                if (asteroidBelt) {
+                  asteroidBelt.visible = false;
+                }
                 renderer.shadowMap.enabled = false;
-                scene.traverse(object => { if (object.isLine) { object.visible = false; } });
+                scene.traverse(object => {
+                  if (object.isLine) {
+                    object.visible = false;
+                  }
+                });
                 this.textContent = 'Standard Mode';
               } else {
-                if (asteroidBelt) { asteroidBelt.visible = true; }
+                if (asteroidBelt) {
+                  asteroidBelt.visible = true;
+                }
                 renderer.shadowMap.enabled = true;
-                scene.traverse(object => { if (object.isLine) { object.visible = true; } });
+                scene.traverse(object => {
+                  if (object.isLine) {
+                    object.visible = true;
+                  }
+                });
                 this.textContent = 'High Performance Mode';
               }
             });
@@ -1078,22 +1146,21 @@ if (document.readyState === "complete" || document.readyState === "interactive")
           }
         });
 
-        // Splash Screen Removal – Check if DOM is already ready
-        function initSplash() {
+        document.addEventListener("DOMContentLoaded", function() {
           setTimeout(function() {
             const splashScreen = document.getElementById("splash-screen");
             splashScreen.style.opacity = "0";
             setTimeout(function() {
               splashScreen.style.display = "none";
-              preloadAsteroids(initSolarSystem);
+              preloadAsteroids(() => {
+                initSolarSystem();
+                applyMobileOptimizations();
+                enableDeviceOrientationControls();
+                addPerformanceModeToggle();
+              });
             }, 1500);
           }, 2500);
-        }
-        if (document.readyState === "loading") {
-          document.addEventListener("DOMContentLoaded", initSplash);
-        } else {
-          initSplash();
-        }
+        });
 
         function getDistance(t1, t2) {
           let dx = t2.clientX - t1.clientX;
@@ -1217,13 +1284,92 @@ if (document.readyState === "complete" || document.readyState === "interactive")
         infoPanel.classList.add("active");
       }
 
-      // Updated close button event handler (works on both desktop and mobile)
-      document.querySelector(".close-btn").addEventListener("click", function(){
+      document.addEventListener("DOMContentLoaded", function(){
+        setTimeout(function(){
+          const splashScreen = document.getElementById("splash-screen");
+          splashScreen.style.opacity = "0";
+          setTimeout(function(){
+            splashScreen.style.display = "none";
+            preloadAsteroids(initSolarSystem);
+          }, 1500);
+        }, 2500);
+
+        document.getElementById("view-solar-system").addEventListener("click", function(){
+          document.getElementById("solar-system").style.display = "block";
+          document.getElementById("kepler-laws").style.display = "none";
+          document.getElementById("controls").style.display = "block";
+          document.getElementById("nav").style.display = "block";
+          document.getElementById("nav").classList.remove("lessons");
+        });
+        document.getElementById("view-kepler-laws").addEventListener("click", function(){
+          document.getElementById("solar-system").style.display = "none";
+          document.getElementById("kepler-laws").style.display = "block";
+          document.getElementById("controls").style.display = "none";
+          document.getElementById("nav").classList.add("lessons");
+          document.getElementById("nav").style.display = "block";
+          initLawVisualizations();
+        });
+        document.querySelector(".close-btn").addEventListener("click", function(){
           document.getElementById("info-panel").classList.remove("active");
-          // On mobile, re-show navigation if needed
           if(window.innerWidth < 768) {
             document.getElementById("nav").style.display = "block";
           }
+        });
+        document.getElementById("time-scale").addEventListener("input", function(){
+          document.getElementById("time-value").textContent = this.value + "x";
+        });
+        document.getElementById("eccentricity").addEventListener("input", function(){
+          document.getElementById("eccentricity-value").textContent = this.value;
+          Object.keys(planetsGlobal).forEach(key => {
+            planetsGlobal[key].data.eccentricity = parseFloat(this.value);
+            updateOrbitLine(key);
+          });
+        });
+        document.getElementById("semi-major").addEventListener("input", function(){
+          document.getElementById("semi-major-value").textContent = this.value + "x";
+          Object.keys(planetsGlobal).forEach(key => updateOrbitLine(key));
+        });
+        document.getElementById("adjust-eccentricity").addEventListener("input", function(){
+          if(selectedPlanetKey && planetsGlobal[selectedPlanetKey]){
+            const newEcc = parseFloat(this.value);
+            planetsGlobal[selectedPlanetKey].data.eccentricity = newEcc;
+            document.getElementById("adjust-ecc-value").textContent = newEcc;
+            updateOrbitLine(selectedPlanetKey);
+          }
+        });
+        document.getElementById("adjust-semi-major").addEventListener("input", function(){
+          if(selectedPlanetKey && planetsGlobal[selectedPlanetKey]){
+            const newMultiplier = parseFloat(this.value);
+            planetsGlobal[selectedPlanetKey].data.semiMajorMultiplier = newMultiplier;
+            document.getElementById("adjust-semi-value").textContent = newMultiplier + "x";
+            updateOrbitLine(selectedPlanetKey);
+          }
+        });
+        document.getElementById("reset-adjust").addEventListener("click", function(){
+          if(selectedPlanetKey && planetsGlobal[selectedPlanetKey]){
+            planetsGlobal[selectedPlanetKey].data.eccentricity = DEFAULT_ECCENTRICITY;
+            planetsGlobal[selectedPlanetKey].data.semiMajorMultiplier = 1;
+            document.getElementById("adjust-eccentricity").value = DEFAULT_ECCENTRICITY;
+            document.getElementById("adjust-semi-major").value = 1;
+            document.getElementById("adjust-ecc-value").textContent = DEFAULT_ECCENTRICITY;
+            document.getElementById("adjust-semi-value").textContent = "1x";
+            updateOrbitLine(selectedPlanetKey);
+            showObjectInfo({ type: "planet", key: selectedPlanetKey });
+          }
+        });
+        document.getElementById("reset-controls").addEventListener("click", function(){
+          document.getElementById("time-scale").value = DEFAULT_TIME_SCALE;
+          document.getElementById("time-value").textContent = DEFAULT_TIME_SCALE + "x";
+          document.getElementById("eccentricity").value = DEFAULT_ECCENTRICITY;
+          document.getElementById("eccentricity-value").textContent = DEFAULT_ECCENTRICITY;
+          document.getElementById("semi-major").value = DEFAULT_SEMI_MAJOR_MULTIPLIER;
+          document.getElementById("semi-major-value").textContent = DEFAULT_SEMI_MAJOR_MULTIPLIER + "x";
+          Object.keys(planetsGlobal).forEach(key => {
+            planetsGlobal[key].data.eccentricity = planetData[key].eccentricity;
+            planetsGlobal[key].data.semiMajorMultiplier = 1;
+            updateOrbitLine(key);
+          });
+        });
       });
 
       // Lesson Visualizations
