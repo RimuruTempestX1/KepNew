@@ -122,14 +122,14 @@
         overflow-y: auto;
         position: relative;
       }
-      /* Close Button inside Controls */
+      /* Close Controls Button (appears inside the panel) */
       #close-controls {
         position: absolute;
         top: 10px;
         right: 10px;
         background: transparent;
         border: none;
-        font-size: 18px;
+        font-size: 20px;
         color: #fff;
         cursor: pointer;
       }
@@ -139,45 +139,24 @@
           display: none;
         }
       }
-      #controls h3 {
-        margin-bottom: 10px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        padding-bottom: 8px;
-        font-size: 16px;
-      }
-      .control-group {
-        margin-bottom: 12px;
-      }
-      .control-label {
+      /* Toggle Controls Button (for mobile when panel is hidden) */
+      #toggle-controls {
         display: block;
-        margin-bottom: 4px;
-        font-size: 13px;
-        color: #aaa;
-      }
-      input[type="range"] {
-        width: 100%;
-        margin-bottom: 10px;
-        background: rgba(255, 255, 255, 0.1);
-        height: 5px;
-        border-radius: 5px;
-        -webkit-appearance: none;
-        appearance: none;
-      }
-      input[type="range"]::-webkit-slider-thumb {
-        -webkit-appearance: none;
-        width: 20px;
-        height: 20px;
+        position: fixed;
+        bottom: 10px;
+        right: 10px;
+        z-index: 11;
         background: #ff5e00;
-        border-radius: 50%;
-        cursor: pointer;
-      }
-      input[type="range"]::-moz-range-thumb {
-        width: 20px;
-        height: 20px;
-        background: #ff5e00;
-        border-radius: 50%;
-        cursor: pointer;
         border: none;
+        padding: 10px 15px;
+        color: #fff;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background 0.3s;
+        font-size: 14px;
+      }
+      #toggle-controls:hover {
+        background: #ff9500;
       }
       /* Info Panel */
       #info-panel {
@@ -201,7 +180,7 @@
       #info-panel.active {
         transform: translateX(0);
       }
-      /* Style the close button for the info panel */
+      /* Close button for info panel */
       #info-panel .close-btn {
         position: absolute;
         top: 10px;
@@ -268,25 +247,6 @@
       }
       .adjust-parameters button:hover,
       #reset-controls:hover {
-        background: #ff9500;
-      }
-      /* Toggle Controls Button (visible on mobile when controls are hidden) */
-      #toggle-controls {
-        display: block;
-        position: fixed;
-        bottom: 10px;
-        right: 10px;
-        z-index: 11;
-        background: #ff5e00;
-        border: none;
-        padding: 10px 15px;
-        color: #fff;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: background 0.3s;
-        font-size: 14px;
-      }
-      #toggle-controls:hover {
         background: #ff9500;
       }
       /* Navigation */
@@ -507,13 +467,13 @@
         <button class="nav-button" id="view-solar-system">Solar System</button>
         <button class="nav-button" id="view-kepler-laws">Lessons</button>
       </nav>
-      <!-- Toggle Controls Button (visible on mobile when controls are hidden) -->
+      <!-- Toggle Controls Button (visible when controls are hidden) -->
       <button id="toggle-controls">Show Controls</button>
       <!-- Solar System Visualization -->
       <div id="solar-system"></div>
       <!-- Controls Panel -->
       <div id="controls">
-        <button id="close-controls">x</button>
+        <button id="close-controls">×</button>
         <h3>Controls</h3>
         <div class="control-group">
           <label class="control-label">Time Scale</label>
@@ -653,14 +613,14 @@
       import { UnrealBloomPass } from 'https://cdn.jsdelivr.net/npm/three@0.159.0/examples/jsm/postprocessing/UnrealBloomPass.js';
       import { EXRLoader } from 'https://cdn.jsdelivr.net/npm/three@0.159.0/examples/jsm/loaders/EXRLoader.js';
 
-      // Global variables
+      // Global variables for the main scene
       let scene, camera, renderer, controls, composer;
       const planetsGlobal = {};
       let selectedPlanetKey = null;
       let asteroidBelt;
       const clickableObjects = [];
-      let totalAsteroids = 1;
       const asteroidModels = [];
+      let totalAsteroids = 1;
       const asteroidPaths = [
         "mesh/asteroid.glb",
         "mesh/asteroid2.glb",
@@ -668,7 +628,7 @@
         "mesh/asteroid4.glb"
       ];
 
-      // Model paths and data
+      // Data for models and planets
       const models = {
         sun: 'mesh/sun.glb',
         mercury: 'mesh/mercury.glb',
@@ -821,9 +781,8 @@
             const globalMultiplier = parseFloat(document.getElementById("semi-major").value);
             const a = planet.semiMajorAxis * globalMultiplier * orbitScale;
             const ecc = planet.eccentricity;
-            const b = a * Math.sqrt(1 - ecc ** 2);
             planetModel.position.x = a * (Math.cos(angle) - ecc);
-            planetModel.position.z = b * Math.sin(angle);
+            planetModel.position.z = (a * Math.sqrt(1 - ecc ** 2)) * Math.sin(angle);
             planetModel.traverse(child => {
               if(child.isMesh){
                 child.frustumCulled = true;
@@ -836,7 +795,7 @@
             const orbitPoints = [];
             for(let i = 0; i <= 100; i++){
               const theta = (i / 100) * Math.PI * 2;
-              orbitPoints.push(a * (Math.cos(theta) - ecc), 0, b * Math.sin(theta));
+              orbitPoints.push(a * (Math.cos(theta) - ecc), 0, (a * Math.sqrt(1 - ecc ** 2)) * Math.sin(theta));
             }
             const orbitGeometry = new THREE.BufferGeometry();
             orbitGeometry.setAttribute("position", new THREE.Float32BufferAttribute(orbitPoints, 3));
@@ -893,10 +852,9 @@
           composer.setSize(window.innerWidth, window.innerHeight);
         });
 
-        // Raycaster for detecting interactions
+        // Raycaster for interactions
         const raycaster = new THREE.Raycaster();
         const pointer = new THREE.Vector2();
-
         function detectInteraction(clientX, clientY) {
           pointer.x = (clientX / window.innerWidth) * 2 - 1;
           pointer.y = -(clientY / window.innerHeight) * 2 + 1;
@@ -909,19 +867,13 @@
             }
           }
         }
-
         document.getElementById("solar-system").addEventListener("click", function(event){
           detectInteraction(event.clientX, event.clientY);
         });
 
-        // Custom Mobile Touch Controls
+        // Mobile touch and pan controls (omitted comments for brevity)
         const solarSystemElem = document.getElementById("solar-system");
-        let touchStartTime = 0;
-        let isTouching = false;
-        let lastTouchX = 0, lastTouchY = 0;
-        let lastTouchDistance = null;
-        let touchMoveCount = 0;
-
+        let touchStartTime = 0, isTouching = false, lastTouchX = 0, lastTouchY = 0, lastTouchDistance = null, touchMoveCount = 0;
         solarSystemElem.addEventListener("touchstart", function(event) {
           touchStartTime = Date.now();
           touchMoveCount = 0;
@@ -935,7 +887,6 @@
           }
           event.preventDefault();
         }, {passive: false});
-
         function pan(deltaX, deltaY) {
           const offset = new THREE.Vector3();
           offset.copy(camera.position).sub(controls.target);
@@ -954,7 +905,6 @@
           camera.position.add(panOffset);
           controls.target.add(panOffset);
         }
-        
         solarSystemElem.addEventListener("touchmove", function(event) {
           touchMoveCount++;
           if (event.touches.length === 1 && isTouching) {
@@ -964,8 +914,7 @@
             pan(deltaX, deltaY);
             lastTouchX = touch.clientX;
             lastTouchY = touch.clientY;
-          }
-          else if (event.touches.length === 2) {
+          } else if (event.touches.length === 2) {
             const currentDistance = getDistance(event.touches[0], event.touches[1]);
             if (lastTouchDistance) {
               const scale = currentDistance / lastTouchDistance;
@@ -977,7 +926,6 @@
           }
           event.preventDefault();
         }, { passive: false });
-
         solarSystemElem.addEventListener("touchend", function(event) {
           const touchDuration = Date.now() - touchStartTime;
           if(event.touches.length === 0) {
@@ -991,6 +939,7 @@
           event.preventDefault();
         }, {passive: false});
 
+        // Mobile Optimizations
         const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
         function applyMobileOptimizations() {
           if (isMobile) {
@@ -1005,10 +954,10 @@
                 object.frustumCulled = true;
               }
             });
+            // Hide controls initially on mobile
             document.getElementById("controls").style.display = "none";
           }
         }
-
         function showMobileInstructions() {
           const mobileInstructions = document.createElement('div');
           mobileInstructions.id = 'mobile-instructions';
@@ -1070,7 +1019,6 @@
             document.body.removeChild(mobileInstructions);
           }
         }
-
         function enableDeviceOrientationControls() {
           if (isMobile && typeof DeviceOrientationEvent !== 'undefined') {
             const deviceOrientationToggle = document.createElement('button');
@@ -1124,7 +1072,6 @@
             }
           }
         }
-
         function addPerformanceModeToggle() {
           if (isMobile) {
             const performanceToggle = document.createElement('button');
@@ -1139,109 +1086,54 @@
             performanceToggle.addEventListener('click', function() {
               highPerformance = !highPerformance;
               if (highPerformance) {
-                if (asteroidBelt) {
-                  asteroidBelt.visible = false;
-                }
+                if (asteroidBelt) { asteroidBelt.visible = false; }
                 renderer.shadowMap.enabled = false;
-                scene.traverse(object => {
-                  if (object.isLine) {
-                    object.visible = false;
-                  }
-                });
+                scene.traverse(object => { if (object.isLine) { object.visible = false; } });
                 this.textContent = 'Standard Mode';
               } else {
-                if (asteroidBelt) {
-                  asteroidBelt.visible = true;
-                }
+                if (asteroidBelt) { asteroidBelt.visible = true; }
                 renderer.shadowMap.enabled = true;
-                scene.traverse(object => {
-                  if (object.isLine) {
-                    object.visible = true;
-                  }
-                });
+                scene.traverse(object => { if (object.isLine) { object.visible = true; } });
                 this.textContent = 'High Performance Mode';
               }
             });
           }
         }
 
-        // Toggle Controls Behavior
-        const toggleControlsBtn = document.getElementById("toggle-controls");
-        toggleControlsBtn.addEventListener("click", function(){
-          const controlsPanel = document.getElementById("controls");
-          controlsPanel.style.display = "block";
-          toggleControlsBtn.style.display = "none";
-        });
-        document.getElementById("close-controls").addEventListener("click", function(){
-          const controlsPanel = document.getElementById("controls");
-          controlsPanel.style.display = "none";
-          toggleControlsBtn.style.display = "block";
-        });
-
-        // Main DOMContentLoaded initialization
-        document.addEventListener("DOMContentLoaded", function() {
-          setTimeout(function() {
-            const splashScreen = document.getElementById("splash-screen");
-            splashScreen.style.opacity = "0";
-            setTimeout(function() {
-              splashScreen.style.display = "none";
-              preloadAsteroids(() => {
-                initSolarSystem();
-                applyMobileOptimizations();
-                enableDeviceOrientationControls();
-                addPerformanceModeToggle();
-              });
-            }, 1500);
-          }, 2500);
-        });
-
-        function getDistance(t1, t2) {
-          let dx = t2.clientX - t1.clientX;
-          let dy = t2.clientY - t1.clientY;
-          return Math.sqrt(dx * dx + dy * dy);
-        }
-
-        // WASD Movement
-        const keysPressed = {};
-        document.addEventListener("keydown", function(event) {
-          keysPressed[event.key.toLowerCase()] = true;
-        });
-        document.addEventListener("keyup", function(event) {
-          keysPressed[event.key.toLowerCase()] = false;
-        });
-        const speedFactor = 5;
-        function animate(){
-          requestAnimationFrame(animate);
-          controls.update();
-          const moveSpeed = 0.5;
-          if(keysPressed['w']) { camera.position.z -= moveSpeed; }
-          if(keysPressed['s']) { camera.position.z += moveSpeed; }
-          if(keysPressed['a']) { camera.position.x -= moveSpeed; }
-          if(keysPressed['d']) { camera.position.x += moveSpeed; }
-          const timeScale = parseFloat(document.getElementById("time-scale").value) * 0.05;
-          const orbitScale = 50;
-          const globalMultiplier = parseFloat(document.getElementById("semi-major").value);
-          Object.entries(planetsGlobal).forEach(([key, planet]) => {
-            const a = planet.data.semiMajorAxis * planet.data.semiMajorMultiplier * globalMultiplier * orbitScale;
-            const ecc = planet.data.eccentricity;
-            const b = a * Math.sqrt(1 - ecc ** 2);
-            const orbitalSpeed = timeScale * speedFactor / Math.sqrt(a ** 3);
-            planet.angle += orbitalSpeed;
-            if(planet.mesh){
-              planet.mesh.position.x = a * (Math.cos(planet.angle) - ecc);
-              planet.mesh.position.z = b * Math.sin(planet.angle);
-              if(planet.moons && planet.moons.length > 0){
-                planet.moons.forEach(m => {
-                  m.angle += orbitalSpeed * m.orbitSpeed;
-                  m.mesh.position.set(Math.cos(m.angle) * m.orbitRadius, 0, Math.sin(m.angle) * m.orbitRadius);
-                });
-              }
-            }
-          });
-          if(asteroidBelt){ asteroidBelt.rotation.y += 0.0005; }
-          composer.render();
-        }
         animate();
+      }
+
+      // Global animation for main scene
+      function animate(){
+        requestAnimationFrame(animate);
+        controls.update();
+        const moveSpeed = 0.5;
+        if(keysPressed['w']) { camera.position.z -= moveSpeed; }
+        if(keysPressed['s']) { camera.position.z += moveSpeed; }
+        if(keysPressed['a']) { camera.position.x -= moveSpeed; }
+        if(keysPressed['d']) { camera.position.x += moveSpeed; }
+        const timeScale = parseFloat(document.getElementById("time-scale").value) * 0.05;
+        const orbitScale = 50;
+        const globalMultiplier = parseFloat(document.getElementById("semi-major").value);
+        Object.entries(planetsGlobal).forEach(([key, planet]) => {
+          const a = planet.data.semiMajorAxis * planet.data.semiMajorMultiplier * globalMultiplier * orbitScale;
+          const ecc = planet.data.eccentricity;
+          const b = a * Math.sqrt(1 - ecc ** 2);
+          const orbitalSpeed = timeScale * 5 / Math.sqrt(a ** 3);
+          planet.angle += orbitalSpeed;
+          if(planet.mesh){
+            planet.mesh.position.x = a * (Math.cos(planet.angle) - ecc);
+            planet.mesh.position.z = b * Math.sin(planet.angle);
+            if(planet.moons && planet.moons.length > 0){
+              planet.moons.forEach(m => {
+                m.angle += orbitalSpeed * m.orbitSpeed;
+                m.mesh.position.set(Math.cos(m.angle) * m.orbitRadius, 0, Math.sin(m.angle) * m.orbitRadius);
+              });
+            }
+          }
+        });
+        if(asteroidBelt){ asteroidBelt.rotation.y += 0.0005; }
+        composer.render();
       }
 
       function updateOrbitLine(planetKey) {
@@ -1315,26 +1207,18 @@
         infoPanel.classList.add("active");
       }
 
-      // Lesson Visualizations
-      let lawVisualizationsInitialized = false;
-      function initLawVisualizations(){
-        if(lawVisualizationsInitialized) return;
-        lawVisualizationsInitialized = true;
-        initNewtonViz();
-        initFirstLawViz();
-        initSecondLawViz();
-        initThirdLawViz();
-        initExampleViz();
-      }
+      // Global mini-visualizations array for lessons
+      const miniVisualizations = [];
 
-      // Modified createMiniScene to also return container for visibility checks
-      function createMiniScene(containerId){
+      // Create a mini scene (shared global loop later)
+      function createMiniScene(containerId) {
         const container = document.getElementById(containerId);
         const loaderEl = container.querySelector('.loading');
         if(loaderEl) container.removeChild(loaderEl);
         const width = container.clientWidth;
         const height = Math.max(container.clientHeight, 250);
-        const miniRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        const miniRenderer = new THREE.WebGLRenderer({ antialias: false, alpha: true });
+        miniRenderer.setPixelRatio(window.devicePixelRatio < 2 ? window.devicePixelRatio : 1);
         miniRenderer.setSize(width, height);
         container.appendChild(miniRenderer.domElement);
         const miniScene = new THREE.Scene();
@@ -1358,15 +1242,16 @@
           miniRenderer.setSize(w, h);
         }
         window.addEventListener('resize', onResize);
-        function animateMini(){
-          requestAnimationFrame(animateMini);
-          // Only update if container is visible
-          if(!container.offsetParent) return;
-          miniControls.update();
-          miniRenderer.render(miniScene, miniCamera);
-        }
-        animateMini();
-        return { container, miniScene, miniCamera, miniRenderer };
+        const miniViz = {
+          container,
+          miniScene,
+          miniCamera,
+          miniRenderer,
+          miniControls,
+          update: function(){ }
+        };
+        miniVisualizations.push(miniViz);
+        return miniViz;
       }
 
       function createTextSprite(text){
@@ -1380,31 +1265,55 @@
         return new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(canvas) }));
       }
 
+      // Lesson Visualizations
+
+      let lawVisualizationsInitialized = false;
+      function initLawVisualizations(){
+        if(lawVisualizationsInitialized) return;
+        lawVisualizationsInitialized = true;
+        initNewtonViz();
+        initFirstLawViz();
+        initSecondLawViz();
+        initThirdLawViz();
+        initExampleViz();
+        animateMiniVisualizations();
+      }
+
+      // Global loop for mini visualizations
+      function animateMiniVisualizations(){
+        requestAnimationFrame(animateMiniVisualizations);
+        miniVisualizations.forEach(viz => {
+          viz.miniControls.update();
+          if(viz.update) viz.update();
+          viz.miniRenderer.render(viz.miniScene, viz.miniCamera);
+        });
+      }
+
       // Newton's Law Visualization
       function initNewtonViz(){
-        const { container, miniScene, miniRenderer, miniCamera } = createMiniScene("newton-law-viz");
+        const viz = createMiniScene("newton-law-viz");
         const sphereGeom = new THREE.SphereGeometry(0.5, 32, 32);
         const mat1 = new THREE.MeshStandardMaterial({ color: 0x00ccff });
         const mat2 = new THREE.MeshStandardMaterial({ color: 0xffcc00 });
         const mass1 = new THREE.Mesh(sphereGeom, mat1);
         mass1.position.set(-2, 0, 0);
-        miniScene.add(mass1);
+        viz.miniScene.add(mass1);
         const mass2 = new THREE.Mesh(sphereGeom, mat2);
         mass2.position.set(2, 0, 0);
-        miniScene.add(mass2);
+        viz.miniScene.add(mass2);
         const arrow = new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), new THREE.Vector3(-2, 0, 0), 4, 0xff0000);
-        miniScene.add(arrow);
+        viz.miniScene.add(arrow);
         const distanceSprite = createTextSprite("Distance: 4 units");
         distanceSprite.scale.set(4, 1, 1);
         distanceSprite.position.set(0, -1.5, 0);
-        miniScene.add(distanceSprite);
+        viz.miniScene.add(distanceSprite);
         const forceSprite = createTextSprite("Force ∝ 1/r²");
         forceSprite.scale.set(4, 1, 1);
         forceSprite.position.set(0, 2.5, 0);
-        miniScene.add(forceSprite);
+        viz.miniScene.add(forceSprite);
         let freeze = false;
-        miniRenderer.domElement.style.cursor = "pointer";
-        miniRenderer.domElement.addEventListener("click", function(){
+        viz.miniRenderer.domElement.style.cursor = "pointer";
+        viz.miniRenderer.domElement.addEventListener("click", function(){
           freeze = !freeze;
           if(freeze){
             const dist = mass1.position.distanceTo(mass2.position).toFixed(2);
@@ -1416,20 +1325,21 @@
             distanceSprite.material.map.needsUpdate = true;
           }
         });
+        // No continuous update needed
       }
 
       // Kepler's First Law Visualization
       function initFirstLawViz(){
-        const { container, miniScene, miniRenderer, miniCamera } = createMiniScene("first-law-viz");
+        const viz = createMiniScene("first-law-viz");
         const starGeom = new THREE.SphereGeometry(0.4, 32, 32);
         const starMat = new THREE.MeshStandardMaterial({ color: 0xffdd00 });
         const star = new THREE.Mesh(starGeom, starMat);
         star.position.set(-1, 0, 0);
-        miniScene.add(star);
+        viz.miniScene.add(star);
         const planetGeom = new THREE.SphereGeometry(0.2, 16, 16);
         const planetMat = new THREE.MeshStandardMaterial({ color: 0x00aaff });
         const planet = new THREE.Mesh(planetGeom, planetMat);
-        miniScene.add(planet);
+        viz.miniScene.add(planet);
         const a = 2, e = 0.6, b = a * Math.sqrt(1 - e * e);
         const points = [];
         for(let i = 0; i <= 100; i++){
@@ -1437,15 +1347,15 @@
           points.push(new THREE.Vector3(a * (Math.cos(theta) - e), b * Math.sin(theta), 0));
         }
         const ellipse = new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), new THREE.LineBasicMaterial({ color: 0xffffff }));
-        miniScene.add(ellipse);
+        viz.miniScene.add(ellipse);
         const paramsSprite = createTextSprite("a = 2, e = 0.6");
         paramsSprite.scale.set(3, 1, 1);
         paramsSprite.position.set(0, -2.5, 0);
-        miniScene.add(paramsSprite);
+        viz.miniScene.add(paramsSprite);
         let angle = 0;
         let freeze = false;
-        miniRenderer.domElement.style.cursor = "pointer";
-        miniRenderer.domElement.addEventListener("click", function(){
+        viz.miniRenderer.domElement.style.cursor = "pointer";
+        viz.miniRenderer.domElement.addEventListener("click", function(){
           freeze = !freeze;
           if(freeze){
             const x = a * (Math.cos(angle) - e).toFixed(2);
@@ -1458,39 +1368,36 @@
             paramsSprite.material.map.needsUpdate = true;
           }
         });
-        function animateOrbit(){
-          requestAnimationFrame(animateOrbit);
+        viz.update = function(){
           if(!freeze){ angle += 0.01; }
           planet.position.set(a * (Math.cos(angle) - e), b * Math.sin(angle), 0);
-        }
-        animateOrbit();
+        };
       }
 
       // Kepler's Second Law Visualization
       function initSecondLawViz(){
-        const { container, miniScene, miniRenderer, miniCamera } = createMiniScene("second-law-viz");
+        const viz = createMiniScene("second-law-viz");
         const starGeom = new THREE.SphereGeometry(0.4, 32, 32);
         const starMat = new THREE.MeshStandardMaterial({ color: 0xffdd00 });
         const star = new THREE.Mesh(starGeom, starMat);
-        miniScene.add(star);
+        viz.miniScene.add(star);
         const planetGeom = new THREE.SphereGeometry(0.2, 16, 16);
         const planetMat = new THREE.MeshStandardMaterial({ color: 0x00aaff });
         const planet = new THREE.Mesh(planetGeom, planetMat);
-        miniScene.add(planet);
+        viz.miniScene.add(planet);
         const a = 3, e = 0.5, b = a * Math.sqrt(1 - e * e);
         const sectorGeom = new THREE.BufferGeometry();
         const sectorMat = new THREE.MeshBasicMaterial({ color: 0xff0000, transparent: true, opacity: 0.4, side: THREE.DoubleSide });
         const sectorMesh = new THREE.Mesh(sectorGeom, sectorMat);
-        miniScene.add(sectorMesh);
+        viz.miniScene.add(sectorMesh);
         const areaSprite = createTextSprite("Area: calculating...");
         areaSprite.scale.set(3, 1, 1);
         areaSprite.position.set(0, -3, 0);
-        miniScene.add(areaSprite);
+        viz.miniScene.add(areaSprite);
         let angle = 0;
-        let freeze = false;
-        let freezeAngle = 0;
-        miniRenderer.domElement.style.cursor = "pointer";
-        miniRenderer.domElement.addEventListener("click", function(){
+        let freeze = false, freezeAngle = 0;
+        viz.miniRenderer.domElement.style.cursor = "pointer";
+        viz.miniRenderer.domElement.addEventListener("click", function(){
           freeze = !freeze;
           if(freeze){ freezeAngle = angle; }
         });
@@ -1516,26 +1423,24 @@
             areaSprite.material.map.needsUpdate = true;
           }
         }
-        function animateOrbit(){
-          requestAnimationFrame(animateOrbit);
+        viz.update = function(){
           if(!freeze){ angle += 0.02; }
           planet.position.set(a * (Math.cos(angle) - e), b * Math.sin(angle), 0);
           updateSector();
-        }
-        animateOrbit();
+        };
       }
 
       // Kepler's Third Law Visualization
       function initThirdLawViz(){
-        const { container, miniScene, miniRenderer, miniCamera } = createMiniScene("third-law-viz");
+        const viz = createMiniScene("third-law-viz");
         const starGeom = new THREE.SphereGeometry(0.4, 32, 32);
         const starMat = new THREE.MeshStandardMaterial({ color: 0xffdd00 });
         const star = new THREE.Mesh(starGeom, starMat);
-        miniScene.add(star);
+        viz.miniScene.add(star);
         const planet1 = new THREE.Mesh(new THREE.SphereGeometry(0.2, 16, 16), new THREE.MeshStandardMaterial({ color: 0x00aaff }));
         const planet2 = new THREE.Mesh(new THREE.SphereGeometry(0.2, 16, 16), new THREE.MeshStandardMaterial({ color: 0xff88aa }));
-        miniScene.add(planet1);
-        miniScene.add(planet2);
+        viz.miniScene.add(planet1);
+        viz.miniScene.add(planet2);
         function makeCircle(r){
           const pts = [];
           for(let i = 0; i < 64; i++){
@@ -1546,19 +1451,19 @@
           return new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color: 0xffffff }));
         }
         const orbit1Radius = 2, orbit2Radius = 3.5;
-        miniScene.add(makeCircle(orbit1Radius));
-        miniScene.add(makeCircle(orbit2Radius));
+        viz.miniScene.add(makeCircle(orbit1Radius));
+        viz.miniScene.add(makeCircle(orbit2Radius));
         let angle1 = 0, angle2 = 0;
         const ratioSprite = createTextSprite("T² ∝ a³");
         ratioSprite.scale.set(3, 1, 1);
         ratioSprite.position.set(0, -3, 0);
-        miniScene.add(ratioSprite);
+        viz.miniScene.add(ratioSprite);
         let freeze = false;
-        miniRenderer.domElement.style.cursor = "pointer";
-        miniRenderer.domElement.addEventListener("click", function(){
+        viz.miniRenderer.domElement.style.cursor = "pointer";
+        viz.miniRenderer.domElement.addEventListener("click", function(){
           freeze = !freeze;
           if(freeze){
-            const periodRatio = (1 / 0.03 / (1 / (0.03 / Math.pow((orbit2Radius/orbit1Radius), 1.5)))).toFixed(2);
+            const periodRatio = (1).toFixed(2);
             const ctx = ratioSprite.material.map.image.getContext('2d');
             ctx.clearRect(0, 0, 256, 64);
             ctx.fillStyle = "white";
@@ -1567,25 +1472,23 @@
             ratioSprite.material.map.needsUpdate = true;
           }
         });
-        function animateOrbit(){
-          requestAnimationFrame(animateOrbit);
+        viz.update = function(){
           if(!freeze){
             angle1 += 0.03;
             angle2 += 0.03 / Math.pow((orbit2Radius/orbit1Radius), 1.5);
           }
           planet1.position.set(orbit1Radius * Math.cos(angle1), orbit1Radius * Math.sin(angle1), 0);
           planet2.position.set(orbit2Radius * Math.cos(angle2), orbit2Radius * Math.sin(angle2), 0);
-        }
-        animateOrbit();
+        };
       }
 
       // Mercury Example Visualization
       function initExampleViz(){
-        const { container, miniScene, miniRenderer, miniCamera } = createMiniScene("kepler-example-viz");
+        const viz = createMiniScene("kepler-example-viz");
         const star = new THREE.Mesh(new THREE.SphereGeometry(0.4, 32, 32), new THREE.MeshStandardMaterial({ color: 0xffdd00 }));
-        miniScene.add(star);
+        viz.miniScene.add(star);
         const mercury = new THREE.Mesh(new THREE.SphereGeometry(0.2, 16, 16), new THREE.MeshStandardMaterial({ color: 0xb1b1b1 }));
-        miniScene.add(mercury);
+        viz.miniScene.add(mercury);
         const rMercury = 2;
         function makeCircleLine(r, color){
           const pts = [];
@@ -1596,15 +1499,15 @@
           pts.push(new THREE.Vector3(r, 0, 0));
           return new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color }));
         }
-        miniScene.add(makeCircleLine(rMercury, 0xaaaaaa));
+        viz.miniScene.add(makeCircleLine(rMercury, 0xaaaaaa));
         const labelSprite = createTextSprite("Mercury: T ≈ 0.253 yrs");
         labelSprite.scale.set(4, 1, 1);
         labelSprite.position.set(0, 2.5, 0);
-        miniScene.add(labelSprite);
+        viz.miniScene.add(labelSprite);
         let angle = 0;
         let freeze = false;
-        miniRenderer.domElement.style.cursor = "pointer";
-        miniRenderer.domElement.addEventListener("click", function(){
+        viz.miniRenderer.domElement.style.cursor = "pointer";
+        viz.miniRenderer.domElement.addEventListener("click", function(){
           freeze = !freeze;
           if(freeze){
             const ctx = labelSprite.material.map.image.getContext('2d');
@@ -1615,32 +1518,65 @@
             labelSprite.material.map.needsUpdate = true;
           }
         });
-        function animateMercury(){
-          requestAnimationFrame(animateMercury);
+        viz.update = function(){
           if(!freeze){ angle += 0.08; }
           mercury.position.set(rMercury * Math.cos(angle), rMercury * Math.sin(angle), 0);
-        }
-        animateMercury();
+        };
       }
 
-      // View toggle for Solar System and Lessons
+      // WASD Movement for main scene
+      const keysPressed = {};
+      document.addEventListener("keydown", function(event) {
+        keysPressed[event.key.toLowerCase()] = true;
+      });
+      document.addEventListener("keyup", function(event) {
+        keysPressed[event.key.toLowerCase()] = false;
+      });
+
       document.addEventListener("DOMContentLoaded", function(){
+        // Controls Toggle Behavior
+        const toggleControlsBtn = document.getElementById("toggle-controls");
+        const controlsPanel = document.getElementById("controls");
+        toggleControlsBtn.addEventListener("click", function(){
+          controlsPanel.style.display = "block";
+          toggleControlsBtn.style.display = "none";
+        });
+        document.getElementById("close-controls").addEventListener("click", function(){
+          controlsPanel.style.display = "none";
+          toggleControlsBtn.style.display = "block";
+        });
+
+        // Splash Screen removal and app initialization
+        setTimeout(function() {
+          const splashScreen = document.getElementById("splash-screen");
+          splashScreen.style.opacity = "0";
+          setTimeout(function() {
+            splashScreen.style.display = "none";
+            preloadAsteroids(() => {
+              initSolarSystem();
+              applyMobileOptimizations();
+              enableDeviceOrientationControls();
+              addPerformanceModeToggle();
+            });
+          }, 1500);
+        }, 2500);
+
         document.getElementById("view-solar-system").addEventListener("click", function(){
           document.getElementById("solar-system").style.display = "block";
           document.getElementById("kepler-laws").style.display = "none";
-          document.getElementById("controls").style.display = "block";
-          document.getElementById("nav").style.display = "block";
+          controlsPanel.style.display = "block";
           document.getElementById("nav").classList.remove("lessons");
+          document.getElementById("nav").style.display = "block";
         });
         document.getElementById("view-kepler-laws").addEventListener("click", function(){
           document.getElementById("solar-system").style.display = "none";
           document.getElementById("kepler-laws").style.display = "block";
-          document.getElementById("controls").style.display = "none";
+          controlsPanel.style.display = "none";
           document.getElementById("nav").classList.add("lessons");
           document.getElementById("nav").style.display = "block";
           initLawVisualizations();
         });
-        document.querySelector("#info-panel .close-btn").addEventListener("click", function(){
+        document.querySelector(".close-btn").addEventListener("click", function(){
           document.getElementById("info-panel").classList.remove("active");
           if(window.innerWidth < 768) {
             document.getElementById("nav").style.display = "block";
