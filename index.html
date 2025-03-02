@@ -2,7 +2,10 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
     <!-- Import map for modules -->
     <script type="importmap">
       {
@@ -14,476 +17,461 @@
     <title>Kepler's & Newton's Laws: Solar System Explorer</title>
     <style>
       /* Global Styles */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: Arial, sans-serif;
-}
-
-html, body {
-  width: 100%;
-  height: 100%;
-  overflow-x: hidden;
-  -webkit-overflow-scrolling: touch; /* Improved scrolling on iOS */
-}
-
-body {
-  background-color: #050e1a;
-  color: #fff;
-  /* Modified touch handling to allow scrolling when needed */
-  touch-action: manipulation; 
-  position: fixed; /* Prevent unwanted bouncing on iOS */
-}
-
-/* Splash Screen */
-#splash-screen {
-  position: fixed;
-  width: 100%;
-  height: 100%;
-  background-color: #050e1a;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  transition: opacity 1.5s ease-out;
-}
-
-#splash-logo {
-  width: 150px; /* Reduced size for mobile */
-  height: 150px; /* Reduced size for mobile */
-  border-radius: 50%;
-  background: radial-gradient(circle, #ff9500, #ff5e00);
-  box-shadow: 0 0 60px rgba(255, 94, 0, 0.6);
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0% { transform: scale(0.95); box-shadow: 0 0 40px rgba(255, 94, 0, 0.5); }
-  50% { transform: scale(1.05); box-shadow: 0 0 70px rgba(255, 94, 0, 0.7); }
-  100% { transform: scale(0.95); box-shadow: 0 0 40px rgba(255, 94, 0, 0.5); }
-}
-
-.splash-text {
-  margin-top: 20px;
-  font-size: 24px; /* Slightly smaller for mobile */
-  letter-spacing: 4px; /* Reduced for better mobile fit */
-  text-transform: uppercase;
-  opacity: 0;
-  animation: fadeIn 2s forwards 0.5s;
-  text-align: center; /* Center text for mobile */
-  padding: 0 15px; /* Add padding for very small screens */
-}
-
-@keyframes fadeIn { to { opacity: 1; } }
-
-/* Main Container */
-.container {
-  width: 100%;
-  height: 100vh;
-  position: relative;
-  overflow: hidden;
-}
-
-/* Solar System Visualization */
-#solar-system {
-  width: 100vw;
-  height: 100vh;
-  position: absolute;
-  top: 0;
-  left: 0;
-  /* Allow pan and zoom on mobile */
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent; /* Remove tap highlight */
-}
-
-/* UI Controls - Mobile Optimized */
-#controls {
-  position: absolute;
-  bottom: 10px;
-  left: 10px;
-  right: 10px;
-  z-index: 10;
-  background: rgba(0, 10, 30, 0.7);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px); /* Support for Safari */
-  border-radius: 15px;
-  padding: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  max-height: 40vh; /* Limit height on mobile */
-  overflow-y: auto; /* Add scrolling for small screens */
-}
-
-#controls h3 {
-  margin-bottom: 10px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  padding-bottom: 8px;
-  font-size: 16px; /* Adjusted for mobile */
-}
-
-.control-group { 
-  margin-bottom: 12px; 
-}
-
-.control-label {
-  display: block;
-  margin-bottom: 4px;
-  font-size: 13px;
-  color: #aaa;
-}
-
-/* Improve range input touch targets */
-input[type="range"] {
-  width: 100%;
-  margin-bottom: 10px;
-  background: rgba(255, 255, 255, 0.1);
-  height: 5px;
-  border-radius: 5px;
-  -webkit-appearance: none;
-  appearance: none;
-}
-
-input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 20px;
-  height: 20px;
-  background: #ff5e00;
-  border-radius: 50%;
-  cursor: pointer;
-}
-
-input[type="range"]::-moz-range-thumb {
-  width: 20px;
-  height: 20px;
-  background: #ff5e00;
-  border-radius: 50%;
-  cursor: pointer;
-  border: none;
-}
-
-/* Info Panel - Mobile Optimized */
-#info-panel {
-  position: absolute;
-  top: 60px; /* Position below navigation */
-  right: 10px;
-  width: calc(100% - 20px); /* Full width minus margins */
-  max-height: 70vh;
-  overflow-y: auto;
-  background: rgba(0, 10, 30, 0.7);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-radius: 15px;
-  padding: 15px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transform: translateX(100%);
-  transition: transform 0.4s ease;
-  z-index: 9;
-}
-
-#info-panel.active { 
-  transform: translateX(0);
-}
-
-.info-header {
-  display: flex;
-  align-items: center;
-  margin-bottom: 12px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.planet-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  margin-right: 12px;
-  background-size: cover;
-  background-position: center;
-  object-fit: cover;
-  overflow: hidden;
-}
-
-.planet-title { 
-  font-size: 20px; 
-  margin: 0; 
-}
-
-.info-content p { 
-  margin-bottom: 10px; 
-  line-height: 1.5; 
-  font-size: 14px;
-}
-
-/* Adjust Parameters Form & Reset Buttons */
-.adjust-parameters {
-  margin-top: 15px;
-  padding-top: 10px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.adjust-parameters label { 
-  font-size: 13px; 
-  color: #ccc; 
-}
-
-.adjust-parameters input[type="range"] { 
-  width: 100%; 
-  margin: 5px 0 10px; 
-}
-
-/* Larger touch targets for buttons */
-.adjust-parameters button,
-#reset-controls {
-  background: #ff5e00;
-  border: none;
-  padding: 10px 15px;
-  color: #fff;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background 0.3s;
-  font-size: 14px;
-  min-height: 44px; /* Apple's recommended minimum touch target size */
-  width: 100%; /* Full width on mobile */
-  margin-top: 5px;
-}
-
-.adjust-parameters button:hover,
-#reset-controls:hover { 
-  background: #ff9500; 
-}
-
-/* Navigation - Mobile Optimized */
-nav {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  right: 10px;
-  z-index: 20;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-/* Lessons Navbar Fixed Header */
-nav.lessons {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  background: rgba(0, 10, 30, 0.9);
-  padding: 8px;
-  z-index: 1000;
-  display: flex;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  white-space: nowrap;
-}
-
-.nav-button {
-  background: rgba(0, 10, 30, 0.8);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-radius: 8px;
-  padding: 12px 15px;
-  color: white;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  margin-right: 6px;
-  cursor: pointer;
-  transition: background 0.3s;
-  min-height: 44px; /* Larger touch target */
-  font-size: 14px;
-  display: inline-block;
-}
-
-.nav-button:hover, .nav-button:active { 
-  background: rgba(0, 20, 60, 0.9); 
-}
-
-/* Lessons Section Content */
-#kepler-laws {
-  display: none;
-  position: absolute;
-  top: 60px;
-  left: 0;
-  width: 100vw;
-  height: calc(100vh - 60px);
-  background: #050e1a;
-  z-index: 5;
-  padding: 15px;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-.law-container {
-  max-width: 100%;
-  margin: 0 auto 30px;
-  background: rgba(0, 10, 30, 0.7);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.law-container h2 {
-  margin-bottom: 15px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  padding-bottom: 12px;
-  font-size: 18px;
-}
-
-.law-content {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-.law-text { 
-  flex: 1; 
-  font-size: 14px;
-  line-height: 1.5;
-}
-
-.law-viz {
-  flex: 1;
-  min-height: 200px;
-  background: rgba(0, 5, 15, 0.5);
-  border-radius: 10px;
-  position: relative;
-  overflow: hidden;
-}
-
-.loading {
-  border: 4px solid rgba(255, 255, 255, 0.3);
-  border-radius: 50%;
-  border-top: 4px solid #fff;
-  width: 30px;
-  height: 30px;
-  animation: spin 1s linear infinite;
-  margin: 0 auto;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-
-@keyframes spin { 
-  0% { transform: translate(-50%, -50%) rotate(0deg); } 
-  100% { transform: translate(-50%, -50%) rotate(360deg); } 
-}
-
-/* Media Queries for Different Device Sizes */
-/* Small phones */
-@media (max-width: 360px) {
-  #splash-logo {
-    width: 120px;
-    height: 120px;
-  }
-  
-  .splash-text {
-    font-size: 18px;
-    letter-spacing: 3px;
-  }
-  
-  #controls h3,
-  .planet-title {
-    font-size: 16px;
-  }
-  
-  .nav-button {
-    padding: 8px 12px;
-    font-size: 13px;
-  }
-  
-  .control-label,
-  .adjust-parameters label,
-  .info-content p {
-    font-size: 12px;
-  }
-}
-
-/* Medium phones to small tablets */
-@media (min-width: 361px) and (max-width: 767px) {
-  #controls {
-    max-height: 45vh;
-  }
-  
-  .nav-button {
-    padding: 10px 14px;
-  }
-  
-  #info-panel {
-    max-height: 65vh;
-  }
-}
-
-/* Tablets and larger devices */
-@media (min-width: 768px) {
-  #controls {
-    width: 300px;
-    left: 20px;
-    right: auto;
-    max-height: 80vh;
-  }
-  
-  #info-panel {
-    width: 350px;
-    right: 20px;
-    top: 20px;
-  }
-  
-  .law-content {
-    flex-direction: row;
-  }
-  
-  nav {
-    left: 20px;
-    top: 20px;
-  }
-  
-  .splash-text {
-    font-size: 28px;
-    letter-spacing: 5px;
-  }
-  
-  #splash-logo {
-    width: 180px;
-    height: 180px;
-  }
-}
-
-/* Fix for notched phones (like iPhone X and newer) */
-@supports (padding: max(0px)) {
-  nav, #controls, #info-panel {
-    padding-left: max(12px, env(safe-area-inset-left));
-    padding-right: max(12px, env(safe-area-inset-right));
-  }
-  
-  nav.lessons {
-    padding-top: max(8px, env(safe-area-inset-top));
-  }
-  
-  #controls {
-    padding-bottom: max(12px, env(safe-area-inset-bottom));
-  }
-}
-
-/* Fix for iOS Safari 100vh issue */
-@supports (-webkit-touch-callout: none) {
-  .container, #solar-system {
-    height: -webkit-fill-available;
-  }
-}
-
-/* Prevent text selection on UI elements */
-.nav-button, #controls, #info-panel, .control-label {
-  -webkit-user-select: none;
-  user-select: none;
-}
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: Arial, sans-serif;
+      }
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
+      }
+      body {
+        background-color: #050e1a;
+        color: #fff;
+        touch-action: manipulation;
+        position: fixed;
+      }
+      /* Splash Screen */
+      #splash-screen {
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        background-color: #050e1a;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        transition: opacity 1.5s ease-out;
+      }
+      #splash-logo {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        background: radial-gradient(circle, #ff9500, #ff5e00);
+        box-shadow: 0 0 60px rgba(255, 94, 0, 0.6);
+        animation: pulse 2s infinite;
+      }
+      @keyframes pulse {
+        0% {
+          transform: scale(0.95);
+          box-shadow: 0 0 40px rgba(255, 94, 0, 0.5);
+        }
+        50% {
+          transform: scale(1.05);
+          box-shadow: 0 0 70px rgba(255, 94, 0, 0.7);
+        }
+        100% {
+          transform: scale(0.95);
+          box-shadow: 0 0 40px rgba(255, 94, 0, 0.5);
+        }
+      }
+      .splash-text {
+        margin-top: 20px;
+        font-size: 24px;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        opacity: 0;
+        animation: fadeIn 2s forwards 0.5s;
+        text-align: center;
+        padding: 0 15px;
+      }
+      @keyframes fadeIn {
+        to {
+          opacity: 1;
+        }
+      }
+      /* Main Container */
+      .container {
+        width: 100%;
+        height: 100vh;
+        position: relative;
+        overflow: hidden;
+      }
+      /* Solar System Visualization */
+      #solar-system {
+        width: 100vw;
+        height: 100vh;
+        position: absolute;
+        top: 0;
+        left: 0;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+      }
+      /* UI Controls Panel */
+      #controls {
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+        right: 10px;
+        z-index: 10;
+        background: rgba(0, 10, 30, 0.7);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 15px;
+        padding: 12px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        max-height: 40vh;
+        overflow-y: auto;
+        /* By default, controls are visible on desktop */
+      }
+      /* Hide controls by default on mobile */
+      @media (max-width: 767px) {
+        #controls {
+          display: none;
+        }
+        /* Show toggle button on mobile */
+        #toggle-controls {
+          display: block;
+        }
+      }
+      #controls h3 {
+        margin-bottom: 10px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding-bottom: 8px;
+        font-size: 16px;
+      }
+      .control-group {
+        margin-bottom: 12px;
+      }
+      .control-label {
+        display: block;
+        margin-bottom: 4px;
+        font-size: 13px;
+        color: #aaa;
+      }
+      input[type="range"] {
+        width: 100%;
+        margin-bottom: 10px;
+        background: rgba(255, 255, 255, 0.1);
+        height: 5px;
+        border-radius: 5px;
+        -webkit-appearance: none;
+        appearance: none;
+      }
+      input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 20px;
+        height: 20px;
+        background: #ff5e00;
+        border-radius: 50%;
+        cursor: pointer;
+      }
+      input[type="range"]::-moz-range-thumb {
+        width: 20px;
+        height: 20px;
+        background: #ff5e00;
+        border-radius: 50%;
+        cursor: pointer;
+        border: none;
+      }
+      /* Info Panel */
+      #info-panel {
+        position: absolute;
+        top: 60px;
+        right: 10px;
+        width: calc(100% - 20px);
+        max-height: 70vh;
+        overflow-y: auto;
+        background: rgba(0, 10, 30, 0.7);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 15px;
+        padding: 15px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        transform: translateX(100%);
+        transition: transform 0.4s ease;
+        z-index: 9;
+      }
+      #info-panel.active {
+        transform: translateX(0);
+      }
+      .info-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 12px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      .planet-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        margin-right: 12px;
+        background-size: cover;
+        background-position: center;
+        object-fit: cover;
+        overflow: hidden;
+      }
+      .planet-title {
+        font-size: 20px;
+        margin: 0;
+      }
+      .info-content p {
+        margin-bottom: 10px;
+        line-height: 1.5;
+        font-size: 14px;
+      }
+      .adjust-parameters {
+        margin-top: 15px;
+        padding-top: 10px;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      .adjust-parameters label {
+        font-size: 13px;
+        color: #ccc;
+      }
+      .adjust-parameters input[type="range"] {
+        width: 100%;
+        margin: 5px 0 10px;
+      }
+      .adjust-parameters button,
+      #reset-controls {
+        background: #ff5e00;
+        border: none;
+        padding: 10px 15px;
+        color: #fff;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background 0.3s;
+        font-size: 14px;
+        min-height: 44px;
+        width: 100%;
+        margin-top: 5px;
+      }
+      .adjust-parameters button:hover,
+      #reset-controls:hover {
+        background: #ff9500;
+      }
+      /* Toggle Controls Button (Mobile) */
+      #toggle-controls {
+        display: none; /* shown only on mobile via media query */
+        position: fixed;
+        bottom: 10px;
+        right: 10px;
+        z-index: 11;
+        background: #ff5e00;
+        border: none;
+        padding: 10px 15px;
+        color: #fff;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background 0.3s;
+        font-size: 14px;
+      }
+      #toggle-controls:hover {
+        background: #ff9500;
+      }
+      /* Navigation */
+      nav {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        right: 10px;
+        z-index: 20;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      nav.lessons {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        background: rgba(0, 10, 30, 0.9);
+        padding: 8px;
+        z-index: 1000;
+        display: flex;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        white-space: nowrap;
+      }
+      .nav-button {
+        background: rgba(0, 10, 30, 0.8);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 8px;
+        padding: 12px 15px;
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        margin-right: 6px;
+        cursor: pointer;
+        transition: background 0.3s;
+        min-height: 44px;
+        font-size: 14px;
+        display: inline-block;
+      }
+      .nav-button:hover,
+      .nav-button:active {
+        background: rgba(0, 20, 60, 0.9);
+      }
+      /* Lessons Section */
+      #kepler-laws {
+        display: none;
+        position: absolute;
+        top: 60px;
+        left: 0;
+        width: 100vw;
+        height: calc(100vh - 60px);
+        background: #050e1a;
+        z-index: 5;
+        padding: 15px;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      .law-container {
+        max-width: 100%;
+        margin: 0 auto 30px;
+        background: rgba(0, 10, 30, 0.7);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      .law-container h2 {
+        margin-bottom: 15px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding-bottom: 12px;
+        font-size: 18px;
+      }
+      .law-content {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+      }
+      .law-text {
+        flex: 1;
+        font-size: 14px;
+        line-height: 1.5;
+      }
+      .law-viz {
+        flex: 1;
+        min-height: 200px;
+        background: rgba(0, 5, 15, 0.5);
+        border-radius: 10px;
+        position: relative;
+        overflow: hidden;
+      }
+      .loading {
+        border: 4px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top: 4px solid #fff;
+        width: 30px;
+        height: 30px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+      @keyframes spin {
+        0% {
+          transform: translate(-50%, -50%) rotate(0deg);
+        }
+        100% {
+          transform: translate(-50%, -50%) rotate(360deg);
+        }
+      }
+      /* Media Queries for devices */
+      @media (max-width: 360px) {
+        #splash-logo {
+          width: 120px;
+          height: 120px;
+        }
+        .splash-text {
+          font-size: 18px;
+          letter-spacing: 3px;
+        }
+        #controls h3,
+        .planet-title {
+          font-size: 16px;
+        }
+        .nav-button {
+          padding: 8px 12px;
+          font-size: 13px;
+        }
+        .control-label,
+        .adjust-parameters label,
+        .info-content p {
+          font-size: 12px;
+        }
+      }
+      @media (min-width: 361px) and (max-width: 767px) {
+        #controls {
+          max-height: 45vh;
+        }
+        .nav-button {
+          padding: 10px 14px;
+        }
+        #info-panel {
+          max-height: 65vh;
+        }
+      }
+      @media (min-width: 768px) {
+        #controls {
+          width: 300px;
+          left: 20px;
+          right: auto;
+          max-height: 80vh;
+        }
+        #info-panel {
+          width: 350px;
+          right: 20px;
+          top: 20px;
+        }
+        .law-content {
+          flex-direction: row;
+        }
+        nav {
+          left: 20px;
+          top: 20px;
+        }
+        .splash-text {
+          font-size: 28px;
+          letter-spacing: 5px;
+        }
+        #splash-logo {
+          width: 180px;
+          height: 180px;
+        }
+      }
+      @supports (padding: max(0px)) {
+        nav,
+        #controls,
+        #info-panel {
+          padding-left: max(12px, env(safe-area-inset-left));
+          padding-right: max(12px, env(safe-area-inset-right));
+        }
+        nav.lessons {
+          padding-top: max(8px, env(safe-area-inset-top));
+        }
+        #controls {
+          padding-bottom: max(12px, env(safe-area-inset-bottom));
+        }
+      }
+      @supports (-webkit-touch-callout: none) {
+        .container,
+        #solar-system {
+          height: -webkit-fill-available;
+        }
+      }
+      .nav-button,
+      #controls,
+      #info-panel,
+      .control-label {
+        -webkit-user-select: none;
+        user-select: none;
+      }
     </style>
   </head>
   <body>
@@ -499,9 +487,11 @@ nav.lessons {
         <button class="nav-button" id="view-solar-system">Solar System</button>
         <button class="nav-button" id="view-kepler-laws">Lessons</button>
       </nav>
+      <!-- Toggle Controls Button (visible on mobile) -->
+      <button id="toggle-controls">Show Controls</button>
       <!-- Solar System Visualization -->
       <div id="solar-system"></div>
-      <!-- Controls Panel (visible only in Solar System view) -->
+      <!-- Controls Panel -->
       <div id="controls">
         <h3>Controls</h3>
         <div class="control-group">
@@ -523,7 +513,7 @@ nav.lessons {
           <button id="reset-controls">Reset Controls</button>
         </div>
       </div>
-      <!-- Info Panel for Objects (hidden by default on mobile) -->
+      <!-- Info Panel -->
       <div id="info-panel">
         <button class="close-btn" style="background-color: transparent; color: white;">&times;</button>
         <div class="info-header">
@@ -547,7 +537,7 @@ nav.lessons {
           <button id="reset-adjust">Reset Adjustments</button>
         </div>
       </div>
-      <!-- Kepler's Laws Section (Lesson Content, scrollable vertically) -->
+      <!-- Kepler's Laws Section -->
       <div id="kepler-laws">
         <!-- Newton's Law of Universal Gravitation -->
         <div class="law-container">
@@ -634,7 +624,6 @@ nav.lessons {
     </div>
     <!-- Script -->
     <script type="module">
-      // Import dependencies
       import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.159.0/build/three.module.js';
       import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.159.0/examples/jsm/controls/OrbitControls.js';
       import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.159.0/examples/jsm/loaders/GLTFLoader.js';
@@ -694,15 +683,15 @@ nav.lessons {
             { name: "ganymede", orbitRadius: 20, orbitSpeed: 1.4, scale: 0.001, description: "Ganymede is the largest moon." },
             { name: "callisto", orbitRadius: 24, orbitSpeed: 1.2, scale: 0.001, description: "Callisto is heavily cratered." }
           ],
-      saturn: [
+        saturn: [
             { name: "titan", orbitRadius: 18, orbitSpeed: 1.3, scale: 0.0005, description: "Titan has a thick atmosphere." },
             { name: "rhea", orbitRadius: 22, orbitSpeed: 1.4, scale: 0.0005, description: "Rhea is a mid-sized, cratered moon." }
           ],
-          uranus: [
+        uranus: [
             { name: "titania", orbitRadius: 18, orbitSpeed: 1.5, scale: 0.0007, description: "Titania features deep canyons." },
             { name: "oberon", orbitRadius: 22, orbitSpeed: 1.4, scale: 0.0007, description: "Oberon is heavily cratered." }
           ],
-          neptune: [ { name: "triton", orbitRadius: 16, orbitSpeed: 1.6, scale: 0.001, description: "Triton has a retrograde orbit and geysers." } ]
+        neptune: [ { name: "triton", orbitRadius: 16, orbitSpeed: 1.6, scale: 0.001, description: "Triton has a retrograde orbit and geysers." } ]
       };
 
       const DEFAULT_TIME_SCALE = 1;
@@ -713,7 +702,6 @@ nav.lessons {
 
       const gltfLoader = new GLTFLoader();
 
-      // Preload asteroid models
       function preloadAsteroids(callback) {
         let loaded = 0;
         asteroidPaths.forEach(path => {
@@ -727,13 +715,14 @@ nav.lessons {
         });
       }
 
-      // Create the asteroid belt
       function createAsteroidBelt() {
         const group = new THREE.Group();
         const countPerModel = Math.floor(totalAsteroids / asteroidModels.length);
         asteroidModels.forEach(model => {
           let baseMesh;
-          model.traverse(child => { if(child.isMesh && !baseMesh) baseMesh = child; });
+          model.traverse(child => {
+            if(child.isMesh && !baseMesh) baseMesh = child;
+          });
           if (!baseMesh) return;
           const geometry = baseMesh.geometry;
           const material = baseMesh.material.clone();
@@ -759,7 +748,6 @@ nav.lessons {
         asteroidBelt = group;
       }
 
-      // Initialize the Solar System
       function initSolarSystem() {
         scene = new THREE.Scene();
         camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10000);
@@ -771,9 +759,7 @@ nav.lessons {
         controls.dampingFactor = 0.05;
         controls.minDistance = 1;
         controls.maxDistance = 10000;
-        // Set constant rotate speed on desktop
         controls.rotateSpeed = 1.0;
-        // If mobile, disable OrbitControls for zoom/pan/rotate so that our custom handlers work
         if ('ontouchstart' in window) {
           controls.enableZoom = false;
           controls.enablePan = false;
@@ -886,11 +872,10 @@ nav.lessons {
           composer.setSize(window.innerWidth, window.innerHeight);
         });
 
-        // Raycaster for detecting touches and clicks
+        // Raycaster for detecting interactions
         const raycaster = new THREE.Raycaster();
         const pointer = new THREE.Vector2();
 
-        // Common function to detect object interaction (ignores asteroids)
         function detectInteraction(clientX, clientY) {
           pointer.x = (clientX / window.innerWidth) * 2 - 1;
           pointer.y = -(clientY / window.innerHeight) * 2 + 1;
@@ -898,335 +883,284 @@ nav.lessons {
           const intersects = raycaster.intersectObjects(clickableObjects, true);
           if(intersects.length > 0){
             const data = intersects[0].object.userData;
-            // Do not show info panel for asteroids
             if(data && data.type && data.type !== "asteroid"){
               showObjectInfo(data);
             }
           }
         }
 
-        // Mouse click event (for desktops)
         document.getElementById("solar-system").addEventListener("click", function(event){
           detectInteraction(event.clientX, event.clientY);
         });
 
-        // --- Custom Mobile Touch Controls ---
-        // --- Better Mobile Touch Controls ---
-const solarSystemElem = document.getElementById("solar-system");
-let touchStartTime = 0;
-let isTouching = false;
-let lastTouchX = 0, lastTouchY = 0;
-let lastTouchDistance = null;
-let touchMoveCount = 0;
+        // Custom Mobile Touch Controls
+        const solarSystemElem = document.getElementById("solar-system");
+        let touchStartTime = 0;
+        let isTouching = false;
+        let lastTouchX = 0, lastTouchY = 0;
+        let lastTouchDistance = null;
+        let touchMoveCount = 0;
 
-solarSystemElem.addEventListener("touchstart", function(event) {
-  touchStartTime = Date.now();
-  touchMoveCount = 0;
-  
-  if(event.touches.length === 1){
-    isTouching = true;
-    lastTouchX = event.touches[0].clientX;
-    lastTouchY = event.touches[0].clientY;
-  } else if(event.touches.length === 2){
-    isTouching = false;
-    lastTouchDistance = getDistance(event.touches[0], event.touches[1]);
-  }
-  event.preventDefault();
-}, {passive: false});
+        solarSystemElem.addEventListener("touchstart", function(event) {
+          touchStartTime = Date.now();
+          touchMoveCount = 0;
+          if(event.touches.length === 1){
+            isTouching = true;
+            lastTouchX = event.touches[0].clientX;
+            lastTouchY = event.touches[0].clientY;
+          } else if(event.touches.length === 2){
+            isTouching = false;
+            lastTouchDistance = getDistance(event.touches[0], event.touches[1]);
+          }
+          event.preventDefault();
+        }, {passive: false});
 
-solarSystemElem.addEventListener("touchmove", function(event) {
-  touchMoveCount++;
-  
-  if(event.touches.length === 1 && isTouching){
-    let touch = event.touches[0];
-    let deltaX = touch.clientX - lastTouchX;
-    let deltaY = touch.clientY - lastTouchY;
-    
-    // Adjust pan factor based on camera distance for more intuitive control
-    const panFactor = 0.1 * (camera.position.z / 100);
-    
-    // Only pan if we've moved enough to consider it intentional
-    if(Math.abs(deltaX) > 2 || Math.abs(deltaY) > 2) {
-      camera.position.x -= deltaX * panFactor;
-      camera.position.y += deltaY * panFactor * 0.5; // Add some vertical movement too
-    }
-    
-    lastTouchX = touch.clientX;
-    lastTouchY = touch.clientY;
-  } else if(event.touches.length === 2){
-    let currentDistance = getDistance(event.touches[0], event.touches[1]);
-    if(lastTouchDistance){
-      let zoomDelta = currentDistance - lastTouchDistance;
-      
-      // Make zoom more responsive and smooth
-      const zoomFactor = 0.1;
-      const minDistance = controls.minDistance;
-      const maxDistance = controls.maxDistance;
-      
-      // Apply zoom to camera position
-      let newZ = camera.position.z - zoomDelta * zoomFactor;
-      // Clamp to min/max distances
-      newZ = Math.max(minDistance, Math.min(maxDistance, newZ));
-      camera.position.z = newZ;
-    }
-    lastTouchDistance = currentDistance;
-  }
-  event.preventDefault();
-}, {passive: false});
+        solarSystemElem.addEventListener("touchmove", function(event) {
+          touchMoveCount++;
+          if(event.touches.length === 1 && isTouching){
+            let touch = event.touches[0];
+            let deltaX = touch.clientX - lastTouchX;
+            let deltaY = touch.clientY - lastTouchY;
+            const panFactor = 0.1 * (camera.position.z / 100);
+            if(Math.abs(deltaX) > 2 || Math.abs(deltaY) > 2) {
+              camera.position.x -= deltaX * panFactor;
+              camera.position.y += deltaY * panFactor * 0.5;
+            }
+            lastTouchX = touch.clientX;
+            lastTouchY = touch.clientY;
+          } else if(event.touches.length === 2){
+            let currentDistance = getDistance(event.touches[0], event.touches[1]);
+            if(lastTouchDistance){
+              let zoomDelta = currentDistance - lastTouchDistance;
+              const zoomFactor = 0.1;
+              const minDistance = controls.minDistance;
+              const maxDistance = controls.maxDistance;
+              let newZ = camera.position.z - zoomDelta * zoomFactor;
+              newZ = Math.max(minDistance, Math.min(maxDistance, newZ));
+              camera.position.z = newZ;
+            }
+            lastTouchDistance = currentDistance;
+          }
+          event.preventDefault();
+        }, {passive: false});
 
-solarSystemElem.addEventListener("touchend", function(event) {
-  const touchDuration = Date.now() - touchStartTime;
-  
-  if(event.touches.length === 0) {
-    // Only consider it a tap if it was brief and didn't move much
-    if(touchDuration < 300 && touchMoveCount < 5){
-      const touch = event.changedTouches[0];
-      detectInteraction(touch.clientX, touch.clientY);
-    }
-    isTouching = false;
-    lastTouchDistance = null;
-  }
-  event.preventDefault();
-}, {passive: false});
+        solarSystemElem.addEventListener("touchend", function(event) {
+          const touchDuration = Date.now() - touchStartTime;
+          if(event.touches.length === 0) {
+            if(touchDuration < 300 && touchMoveCount < 5){
+              const touch = event.changedTouches[0];
+              detectInteraction(touch.clientX, touch.clientY);
+            }
+            isTouching = false;
+            lastTouchDistance = null;
+          }
+          event.preventDefault();
+        }, {passive: false});
 
-        // --- Mobile Detection and Optimizations ---
-const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-
-// Function to apply mobile-specific optimizations
-function applyMobileOptimizations() {
-  if (isMobile) {
-    // Add mobile class to body for CSS targeting
-    document.body.classList.add('mobile-device');
-    
-    // Reduce quality for better performance on mobile
-    renderer.setPixelRatio(window.devicePixelRatio > 1 ? 1.5 : 1);
-    
-    // Adjust camera initial position for better mobile view
-    camera.position.set(0, 70, 150);
-    
-    // Disable some effects for performance
-    composer.removePass(bloomPass);
-    
-    // Add mobile instructions initially
-    showMobileInstructions();
-    
-    // Reduce asteroid count for better performance
-    totalAsteroids = Math.min(totalAsteroids, 1000);
-    
-    // Optimize frustum culling
-    scene.traverse(object => {
-      if (object.isMesh) {
-        object.frustumCulled = true;
-      }
-    });
-  }
-}
-
-// Function to show mobile-specific instructions
-function showMobileInstructions() {
-  const mobileInstructions = document.createElement('div');
-  mobileInstructions.id = 'mobile-instructions';
-  mobileInstructions.innerHTML = `
-    <div class="instructions-panel">
-      <h3>Mobile Controls</h3>
-      <ul>
-        <li>One finger: Pan the view</li>
-        <li>Two fingers: Zoom in/out</li>
-        <li>Quick tap: Select object</li>
-      </ul>
-      <button id="close-instructions">Got it!</button>
-    </div>
-  `;
-  document.body.appendChild(mobileInstructions);
-  
-  // Style the instructions
-  const style = document.createElement('style');
-  style.textContent = `
-    #mobile-instructions {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.7);
-      z-index: 10000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .instructions-panel {
-      background: rgba(20, 30, 50, 0.95);
-      padding: 20px;
-      border-radius: 15px;
-      max-width: 85%;
-      text-align: center;
-      box-shadow: 0 5px 25px rgba(0,0,0,0.5);
-      border: 1px solid rgba(255,255,255,0.1);
-    }
-    .instructions-panel h3 {
-      margin-top: 0;
-      color: #4a90e2;
-    }
-    .instructions-panel ul {
-      text-align: left;
-      margin: 15px 0;
-      padding-left: 20px;
-    }
-    #close-instructions {
-      margin-top: 10px;
-      width: 100%;
-    }
-  `;
-  document.head.appendChild(style);
-  
-  // Close button functionality
-  document.getElementById('close-instructions').addEventListener('click', function() {
-    document.body.removeChild(mobileInstructions);
-    localStorage.setItem('mobileInstructionsShown', 'true');
-  });
-  
-  // Don't show again if user has seen it
-  if (localStorage.getItem('mobileInstructionsShown') === 'true') {
-    document.body.removeChild(mobileInstructions);
-  }
-}
-
-// Add device orientation controls for mobile
-function enableDeviceOrientationControls() {
-  if (isMobile && typeof DeviceOrientationEvent !== 'undefined') {
-    const deviceOrientationToggle = document.createElement('button');
-    deviceOrientationToggle.id = 'orientation-toggle';
-    deviceOrientationToggle.textContent = 'Enable Gyroscope';
-    deviceOrientationToggle.style.position = 'fixed';
-    deviceOrientationToggle.style.bottom = '80px';
-    deviceOrientationToggle.style.right = '10px';
-    deviceOrientationToggle.style.zIndex = '1000';
-    document.body.appendChild(deviceOrientationToggle);
-    
-    let gyroEnabled = false;
-    deviceOrientationToggle.addEventListener('click', function() {
-      if (!gyroEnabled) {
-        // Request permission if needed
-        if (typeof DeviceOrientationEvent.requestPermission === 'function') {
-          DeviceOrientationEvent.requestPermission()
-            .then(permissionState => {
-              if (permissionState === 'granted') {
-                enableGyroscope();
-                this.textContent = 'Disable Gyroscope';
-                gyroEnabled = true;
+        // Mobile Detection and Optimizations
+        const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        function applyMobileOptimizations() {
+          if (isMobile) {
+            document.body.classList.add('mobile-device');
+            renderer.setPixelRatio(window.devicePixelRatio > 1 ? 1.5 : 1);
+            camera.position.set(0, 70, 150);
+            composer.removePass(bloomPass);
+            showMobileInstructions();
+            totalAsteroids = Math.min(totalAsteroids, 1000);
+            scene.traverse(object => {
+              if (object.isMesh) {
+                object.frustumCulled = true;
               }
-            })
-            .catch(console.error);
-        } else {
-          enableGyroscope();
-          this.textContent = 'Disable Gyroscope';
-          gyroEnabled = true;
+            });
+            // Hide controls initially on mobile
+            document.getElementById("controls").style.display = "none";
+          }
         }
-      } else {
-        disableGyroscope();
-        this.textContent = 'Enable Gyroscope';
-        gyroEnabled = false;
-      }
-    });
-    
-    let deviceOrientation = null;
-    
-    function enableGyroscope() {
-      deviceOrientation = new THREE.DeviceOrientationControls(camera);
-      window.addEventListener('deviceorientation', updateOrientation);
-    }
-    
-    function disableGyroscope() {
-      if (deviceOrientation) {
-        window.removeEventListener('deviceorientation', updateOrientation);
-        deviceOrientation.disconnect();
-        deviceOrientation = null;
-      }
-    }
-    
-    function updateOrientation() {
-      if (deviceOrientation) {
-        deviceOrientation.update();
-      }
-    }
-  }
-}
 
-// Add performance mode toggle for mobile
-function addPerformanceModeToggle() {
-  if (isMobile) {
-    const performanceToggle = document.createElement('button');
-    performanceToggle.id = 'performance-toggle';
-    performanceToggle.textContent = 'High Performance Mode';
-    performanceToggle.style.position = 'fixed';
-    performanceToggle.style.bottom = '130px';
-    performanceToggle.style.right = '10px';
-    performanceToggle.style.zIndex = '1000';
-    document.body.appendChild(performanceToggle);
-    
-    let highPerformance = false;
-    
-    performanceToggle.addEventListener('click', function() {
-      highPerformance = !highPerformance;
-      
-      if (highPerformance) {
-        // Hide asteroid belt for better performance
-        if (asteroidBelt) {
-          asteroidBelt.visible = false;
+        function showMobileInstructions() {
+          const mobileInstructions = document.createElement('div');
+          mobileInstructions.id = 'mobile-instructions';
+          mobileInstructions.innerHTML = `
+            <div class="instructions-panel">
+              <h3>Mobile Controls</h3>
+              <ul>
+                <li>One finger: Pan the view</li>
+                <li>Two fingers: Zoom in/out</li>
+                <li>Quick tap: Select object</li>
+              </ul>
+              <button id="close-instructions">Got it!</button>
+            </div>
+          `;
+          document.body.appendChild(mobileInstructions);
+          const style = document.createElement('style');
+          style.textContent = `
+            #mobile-instructions {
+              position: fixed;
+              top: 0;
+              left: 0;
+              width: 100%;
+              height: 100%;
+              background: rgba(0,0,0,0.7);
+              z-index: 10000;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            }
+            .instructions-panel {
+              background: rgba(20, 30, 50, 0.95);
+              padding: 20px;
+              border-radius: 15px;
+              max-width: 85%;
+              text-align: center;
+              box-shadow: 0 5px 25px rgba(0,0,0,0.5);
+              border: 1px solid rgba(255,255,255,0.1);
+            }
+            .instructions-panel h3 {
+              margin-top: 0;
+              color: #4a90e2;
+            }
+            .instructions-panel ul {
+              text-align: left;
+              margin: 15px 0;
+              padding-left: 20px;
+            }
+            #close-instructions {
+              margin-top: 10px;
+              width: 100%;
+            }
+          `;
+          document.head.appendChild(style);
+          document.getElementById('close-instructions').addEventListener('click', function() {
+            document.body.removeChild(mobileInstructions);
+            localStorage.setItem('mobileInstructionsShown', 'true');
+          });
+          if (localStorage.getItem('mobileInstructionsShown') === 'true') {
+            document.body.removeChild(mobileInstructions);
+          }
         }
-        
-        // Reduce shadow quality
-        renderer.shadowMap.enabled = false;
-        
-        // Hide orbit lines
-        scene.traverse(object => {
-          if (object.isLine) {
-            object.visible = false;
+
+        function enableDeviceOrientationControls() {
+          if (isMobile && typeof DeviceOrientationEvent !== 'undefined') {
+            const deviceOrientationToggle = document.createElement('button');
+            deviceOrientationToggle.id = 'orientation-toggle';
+            deviceOrientationToggle.textContent = 'Enable Gyroscope';
+            deviceOrientationToggle.style.position = 'fixed';
+            deviceOrientationToggle.style.bottom = '80px';
+            deviceOrientationToggle.style.right = '10px';
+            deviceOrientationToggle.style.zIndex = '1000';
+            document.body.appendChild(deviceOrientationToggle);
+            let gyroEnabled = false;
+            deviceOrientationToggle.addEventListener('click', function() {
+              if (!gyroEnabled) {
+                if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+                  DeviceOrientationEvent.requestPermission()
+                    .then(permissionState => {
+                      if (permissionState === 'granted') {
+                        enableGyroscope();
+                        this.textContent = 'Disable Gyroscope';
+                        gyroEnabled = true;
+                      }
+                    })
+                    .catch(console.error);
+                } else {
+                  enableGyroscope();
+                  this.textContent = 'Disable Gyroscope';
+                  gyroEnabled = true;
+                }
+              } else {
+                disableGyroscope();
+                this.textContent = 'Enable Gyroscope';
+                gyroEnabled = false;
+              }
+            });
+            let deviceOrientation = null;
+            function enableGyroscope() {
+              deviceOrientation = new THREE.DeviceOrientationControls(camera);
+              window.addEventListener('deviceorientation', updateOrientation);
+            }
+            function disableGyroscope() {
+              if (deviceOrientation) {
+                window.removeEventListener('deviceorientation', updateOrientation);
+                deviceOrientation.disconnect();
+                deviceOrientation = null;
+              }
+            }
+            function updateOrientation() {
+              if (deviceOrientation) {
+                deviceOrientation.update();
+              }
+            }
+          }
+        }
+
+        function addPerformanceModeToggle() {
+          if (isMobile) {
+            const performanceToggle = document.createElement('button');
+            performanceToggle.id = 'performance-toggle';
+            performanceToggle.textContent = 'High Performance Mode';
+            performanceToggle.style.position = 'fixed';
+            performanceToggle.style.bottom = '130px';
+            performanceToggle.style.right = '10px';
+            performanceToggle.style.zIndex = '1000';
+            document.body.appendChild(performanceToggle);
+            let highPerformance = false;
+            performanceToggle.addEventListener('click', function() {
+              highPerformance = !highPerformance;
+              if (highPerformance) {
+                if (asteroidBelt) {
+                  asteroidBelt.visible = false;
+                }
+                renderer.shadowMap.enabled = false;
+                scene.traverse(object => {
+                  if (object.isLine) {
+                    object.visible = false;
+                  }
+                });
+                this.textContent = 'Standard Mode';
+              } else {
+                if (asteroidBelt) {
+                  asteroidBelt.visible = true;
+                }
+                renderer.shadowMap.enabled = true;
+                scene.traverse(object => {
+                  if (object.isLine) {
+                    object.visible = true;
+                  }
+                });
+                this.textContent = 'High Performance Mode';
+              }
+            });
+          }
+        }
+
+        // Toggle Controls Button for Mobile
+        const toggleControlsBtn = document.getElementById("toggle-controls");
+        toggleControlsBtn.addEventListener("click", function(){
+          const controlsPanel = document.getElementById("controls");
+          if(controlsPanel.style.display === "none" || controlsPanel.style.display === ""){
+            controlsPanel.style.display = "block";
+            this.textContent = "Hide Controls";
+          } else {
+            controlsPanel.style.display = "none";
+            this.textContent = "Show Controls";
           }
         });
-        
-        this.textContent = 'Standard Mode';
-      } else {
-        // Restore defaults
-        if (asteroidBelt) {
-          asteroidBelt.visible = true;
-        }
-        
-        renderer.shadowMap.enabled = true;
-        
-        scene.traverse(object => {
-          if (object.isLine) {
-            object.visible = true;
-          }
-        });
-        
-        this.textContent = 'High Performance Mode';
-      }
-    });
-  }
-}
 
-// Call these mobile enhancement functions at the right time
-document.addEventListener("DOMContentLoaded", function() {
-  // The existing timeout for splash screen
-  setTimeout(function() {
-    const splashScreen = document.getElementById("splash-screen");
-    splashScreen.style.opacity = "0";
-    setTimeout(function() {
-      splashScreen.style.display = "none";
-      preloadAsteroids(() => {
-        initSolarSystem();
-        
-        // Apply mobile enhancements after system is initialized
-        applyMobileOptimizations();
-        enableDeviceOrientationControls();
-        addPerformanceModeToggle();
-      });
-    }, 1500);
-  }, 2500);
-  
-  // Other existing event listeners...
-});
+        document.addEventListener("DOMContentLoaded", function() {
+          setTimeout(function() {
+            const splashScreen = document.getElementById("splash-screen");
+            splashScreen.style.opacity = "0";
+            setTimeout(function() {
+              splashScreen.style.display = "none";
+              preloadAsteroids(() => {
+                initSolarSystem();
+                applyMobileOptimizations();
+                enableDeviceOrientationControls();
+                addPerformanceModeToggle();
+              });
+            }, 1500);
+          }, 2500);
+        });
 
         function getDistance(t1, t2) {
           let dx = t2.clientX - t1.clientX;
@@ -1234,8 +1168,7 @@ document.addEventListener("DOMContentLoaded", function() {
           return Math.sqrt(dx * dx + dy * dy);
         }
 
-        // --- WASD Continuous Movement ---
-        // Object to track keys that are currently pressed
+        // WASD Continuous Movement
         const keysPressed = {};
         document.addEventListener("keydown", function(event) {
           keysPressed[event.key.toLowerCase()] = true;
@@ -1247,16 +1180,12 @@ document.addEventListener("DOMContentLoaded", function() {
         const speedFactor = 5;
         function animate(){
           requestAnimationFrame(animate);
-          // Update OrbitControls
           controls.update();
-
-          // --- Continuous WASD Movement ---
-          const moveSpeed = 0.5; // adjust move speed as needed
+          const moveSpeed = 0.5;
           if(keysPressed['w']) { camera.position.z -= moveSpeed; }
           if(keysPressed['s']) { camera.position.z += moveSpeed; }
           if(keysPressed['a']) { camera.position.x -= moveSpeed; }
           if(keysPressed['d']) { camera.position.x += moveSpeed; }
-
           const timeScale = parseFloat(document.getElementById("time-scale").value) * 0.05;
           const orbitScale = 50;
           const globalMultiplier = parseFloat(document.getElementById("semi-major").value);
@@ -1283,7 +1212,6 @@ document.addEventListener("DOMContentLoaded", function() {
         animate();
       }
 
-      // Update the orbit line when parameters change
       function updateOrbitLine(planetKey) {
         const planetObj = planetsGlobal[planetKey];
         scene.remove(planetObj.orbitLine);
@@ -1307,61 +1235,55 @@ document.addEventListener("DOMContentLoaded", function() {
         planetObj.orbitLine = newOrbitLine;
       }
 
-      // Show information panel for selected object
-function showObjectInfo(userData) {
-  // Do not show info panel for asteroids
-  if(userData.type === "asteroid") return;
-  
-  const infoPanel = document.getElementById("info-panel");
-  const nameEl = document.getElementById("selected-planet-name");
-  const iconEl = document.getElementById("selected-planet-icon");
-  const infoContent = document.getElementById("planet-info");
-  const adjustForm = document.getElementById("adjust-form");
-  const nav = document.getElementById("nav");
-  let html = "";
-  
-  // On mobile, always hide the nav when info panel is active in Solar System view
-  if(window.innerWidth < 768) {
-    nav.style.display = "none";
-    nav.classList.add("hidden-by-info-panel");
-  }
-  
-  if(userData.type === "planet"){
-    const planet = planetData[userData.key];
-    selectedPlanetKey = userData.key;
-    nameEl.textContent = planet.name;
-    iconEl.style.backgroundImage = `url('texture/${planet.name.toLowerCase()}.png')`;
-    html += `<p>${planet.description}</p>`;
-    html += `<p><strong>Semi-major Axis (default):</strong> ${planet.semiMajorAxis} AU</p>`;
-    html += `<p><strong>Eccentricity (default):</strong> ${planet.eccentricity}</p>`;
-    html += `<p><strong>Orbital Period:</strong> ${planet.orbitalPeriod} Earth days</p>`;
-    html += `<p><strong>Rotation Period:</strong> ${Math.abs(planet.rotationPeriod)} Earth days${planet.rotationPeriod < 0 ? " (retrograde)" : ""}</p>`;
-    if(moonsData[userData.key]){
-      html += `<p><strong>Moons:</strong> ${moonsData[userData.key].map(m => m.name).join(", ")}</p>`;
-    }
-    adjustForm.style.display = "block";
-    document.getElementById("adjust-eccentricity").value = planet.eccentricity;
-    document.getElementById("adjust-semi-major").value = 1;
-    document.getElementById("adjust-ecc-value").textContent = planet.eccentricity;
-    document.getElementById("adjust-semi-value").textContent = "1x";
-  } else if(userData.type === "moon"){
-    const parent = planetData[userData.parent];
-    nameEl.textContent = "Moon: " + userData.name + " of " + parent.name;
-    iconEl.style.backgroundImage = `url('texture/${userData.name.toLowerCase()}.png')`;
-    html += `<p>${userData.description || "Detailed information about this moon is not available."}</p>`;
-    adjustForm.style.display = "none";
-  } else if(userData.type === "sun"){
-    nameEl.textContent = sunData.name;
-    iconEl.style.backgroundImage = `url('texture/sun.png')`;
-    html += `<p>${sunData.description}</p>`;
-    adjustForm.style.display = "none";
-  }
-  
-  infoContent.innerHTML = html;
-  infoPanel.classList.add("active");
-}
+      function showObjectInfo(userData) {
+        if(userData.type === "asteroid") return;
+        const infoPanel = document.getElementById("info-panel");
+        const nameEl = document.getElementById("selected-planet-name");
+        const iconEl = document.getElementById("selected-planet-icon");
+        const infoContent = document.getElementById("planet-info");
+        const adjustForm = document.getElementById("adjust-form");
+        const nav = document.getElementById("nav");
+        // Hide navigation and controls on mobile when info panel is shown
+        if(window.innerWidth < 768) {
+          nav.style.display = "none";
+          document.getElementById("controls").style.display = "none";
+          document.getElementById("toggle-controls").textContent = "Show Controls";
+        }
+        let html = "";
+        if(userData.type === "planet"){
+          const planet = planetData[userData.key];
+          selectedPlanetKey = userData.key;
+          nameEl.textContent = planet.name;
+          iconEl.style.backgroundImage = `url('texture/${planet.name.toLowerCase()}.png')`;
+          html += `<p>${planet.description}</p>`;
+          html += `<p><strong>Semi-major Axis (default):</strong> ${planet.semiMajorAxis} AU</p>`;
+          html += `<p><strong>Eccentricity (default):</strong> ${planet.eccentricity}</p>`;
+          html += `<p><strong>Orbital Period:</strong> ${planet.orbitalPeriod} Earth days</p>`;
+          html += `<p><strong>Rotation Period:</strong> ${Math.abs(planet.rotationPeriod)} Earth days${planet.rotationPeriod < 0 ? " (retrograde)" : ""}</p>`;
+          if(moonsData[userData.key]){
+            html += `<p><strong>Moons:</strong> ${moonsData[userData.key].map(m => m.name).join(", ")}</p>`;
+          }
+          adjustForm.style.display = "block";
+          document.getElementById("adjust-eccentricity").value = planet.eccentricity;
+          document.getElementById("adjust-semi-major").value = 1;
+          document.getElementById("adjust-ecc-value").textContent = planet.eccentricity;
+          document.getElementById("adjust-semi-value").textContent = "1x";
+        } else if(userData.type === "moon"){
+          const parent = planetData[userData.parent];
+          nameEl.textContent = "Moon: " + userData.name + " of " + parent.name;
+          iconEl.style.backgroundImage = `url('texture/${userData.name.toLowerCase()}.png')`;
+          html += `<p>${userData.description || "Detailed information about this moon is not available."}</p>`;
+          adjustForm.style.display = "none";
+        } else if(userData.type === "sun"){
+          nameEl.textContent = sunData.name;
+          iconEl.style.backgroundImage = `url('texture/sun.png')`;
+          html += `<p>${sunData.description}</p>`;
+          adjustForm.style.display = "none";
+        }
+        infoContent.innerHTML = html;
+        infoPanel.classList.add("active");
+      }
 
-      // Event listeners for DOM content and UI controls
       document.addEventListener("DOMContentLoaded", function(){
         setTimeout(function(){
           const splashScreen = document.getElementById("splash-screen");
@@ -1376,7 +1298,6 @@ function showObjectInfo(userData) {
           document.getElementById("solar-system").style.display = "block";
           document.getElementById("kepler-laws").style.display = "none";
           document.getElementById("controls").style.display = "block";
-          // In Solar System view, ensure nav is visible and remove lessons styling
           document.getElementById("nav").style.display = "block";
           document.getElementById("nav").classList.remove("lessons");
         });
@@ -1384,16 +1305,12 @@ function showObjectInfo(userData) {
           document.getElementById("solar-system").style.display = "none";
           document.getElementById("kepler-laws").style.display = "block";
           document.getElementById("controls").style.display = "none";
-          // For Lessons, add the 'lessons' class to nav so that it sits fixed at the top with background,
-          // and lessons content is pushed down via top margin.
           document.getElementById("nav").classList.add("lessons");
           document.getElementById("nav").style.display = "block";
           initLawVisualizations();
         });
-// Improved close button handler to properly restore navbar
-document.querySelector(".close-btn").addEventListener("click", function(){
+        document.querySelector(".close-btn").addEventListener("click", function(){
           document.getElementById("info-panel").classList.remove("active");
-          // When closing info panel on mobile in Solar System view, re-show nav
           if(window.innerWidth < 768) {
             document.getElementById("nav").style.display = "block";
           }
@@ -1455,7 +1372,7 @@ document.querySelector(".close-btn").addEventListener("click", function(){
         });
       });
 
-      // --- Lesson Visualizations ---
+      // Lesson Visualizations
       let lawVisualizationsInitialized = false;
       function initLawVisualizations(){
         if(lawVisualizationsInitialized) return;
@@ -1726,7 +1643,6 @@ document.querySelector(".close-btn").addEventListener("click", function(){
         const mercury = new THREE.Mesh(new THREE.SphereGeometry(0.2, 16, 16), new THREE.MeshStandardMaterial({ color: 0xb1b1b1 }));
         miniScene.add(mercury);
         const rMercury = 2;
-        // Helper for circle outline
         function makeCircleLine(r, color){
           const pts = [];
           for(let i = 0; i < 64; i++){
