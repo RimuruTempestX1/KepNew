@@ -1,3 +1,5 @@
+<!-- Welcome Splash Screen -->
+</div>
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -120,24 +122,7 @@
         z-index: 10;
         width: 300px;
       }
-      #close-controls {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        background: transparent;
-        border: none;
-        font-size: 20px;
-        color: #fff;
-        cursor: pointer;
-      }
-      #toggle-controls {
-        display: none;
-        position: fixed;
-        bottom: 10px;
-        right: 10px;
-        z-index: 11;
-        font-size: 14px;
-      }
+
       #toggle-controls:hover {
         background: #ff9500;
       }
@@ -522,45 +507,162 @@
       }
     </style>
   </head>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>The Whirlpool Galaxy (M51)</title>
+  <style>
+    body {
+      background-color: #020817;
+      color: white;
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    .center-image {
+      display: flex;
+      justify-content: center;
+      margin-top: 20px;
+    }
+    img {
+      border: 2px solid #fff;
+      border-radius: 10px;
+      max-width: 90%;
+      height: auto;
+    }
+    p.credit {
+      text-align: center;
+      margin-top: 10px;
+      font-size: 14px;
+    }
+    .buttons {
+      margin-top: 30px;
+      text-align: center;
+    }
+    .buttons button {
+      margin: 5px;
+      padding: 10px 20px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      background-color: #0f172a;
+      color: white;
+      transition: background-color 0.3s;
+    }
+    .buttons button:hover {
+      background-color: #1e293b;
+    }
+  </style>
+<script>
+  function closeWelcome() {
+    const welcome = document.getElementById("welcome-screen");
+    welcome.style.transition = "opacity 1s ease-out";
+    welcome.style.opacity = 0;
+    setTimeout(() => {
+      welcome.style.display = "none";
+    }, 1000);
+  }
+
+  // Optional: auto-close after beberapa detik (misal 6 detik)
+  // setTimeout(closeWelcome, 6000);
+</script>
+</body>
+</html>
+
   <body>
     <!-- Splash Screen -->
     <div id="splash-screen">
       <div id="splash-logo"></div>
-      <div class="splash-text">KepNew Space</div>
+      <div class="splash-text">Hukum Newton tentang Gravitasi</div>
     </div>
     <!-- Main Container -->
     <div class="container">
       <!-- Navigation -->
       <nav id="nav">
-        <button class="nav-button" id="view-solar-system">Solar System</button>
-        <button class="nav-button" id="view-kepler-laws">Lessons</button>
+        <button class="nav-button" id="view-solar-system">Home</button>
+        <button class="nav-button" id="view-kompetensi">Kompetensi</button>
+        <button class="nav-button" id="view-petunjuk-penggunaan-website">Petunjuk Penguunaan Website</button>
+        <button class="nav-button" id="view-kepler-laws">Materi Pembelajaran</button>
+        <button class="nav-button" id="view-latihan-soal">Latihan Soal</button>
+        <button class="nav-button" id="view-kunci-jawaban">Kunci Jawaban</button>
+        <button class="nav-button" id="view-glosarium">Glosarium</button>
+        <button class="nav-button" id="view-tentang-penulis">Tentang Penulis</button>
       </nav>
       <!-- Toggle Controls Button (hidden by default) -->
-      <button id="toggle-controls" class="control-button">Show Controls</button>
+      <button id="toggle-controls" class="control-button"></button>
       <!-- Solar System Visualization -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>The Whirlpool Galaxy (M51)</title>
+  <style>
+    body {
+      background-color: #020817;
+      color: white;
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    .center-image {
+      display: flex;
+      justify-content: center;
+      margin-top: 20px;
+    }
+    img {
+      border: 2px solid #fff;
+      border-radius: 10px;
+      max-width: 90%;
+      height: auto;
+    }
+    p.credit {
+      text-align: center;
+      margin-top: 10px;
+      font-size: 14px;
+    }
+    .buttons {
+      margin-top: 30px;
+      text-align: center;
+    }
+    .buttons button {
+      margin: 5px;
+      padding: 10px 20px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      background-color: #0f172a;
+      color: white;
+      transition: background-color 0.3s;
+    }
+    .buttons button:hover {
+      background-color: #1e293b;
+    }
+  </style>
+<body>
+  <div class="center-image">
+    <vid src="http://jpl.nasa.gov/edu/images/videos/inasnap_solarsystem.jpg" 
+         alt="The Whirlpool Galaxy (M51)">
+  </div>
+<script>
+  function closeWelcome() {
+    const welcome = document.getElementById("welcome-screen");
+    welcome.style.transition = "opacity 1s ease-out";
+    welcome.style.opacity = 0;
+    setTimeout(() => {
+      welcome.style.display = "none";
+    }, 1000);
+  }
+
+  // Optional: auto-close after beberapa detik (misal 6 detik)
+  // setTimeout(closeWelcome, 6000);
+</script>
+</body>
+</html>
       <div id="solar-system"></div>
       <!-- Controls Panel -->
       <div id="controls">
         <button id="close-controls">×</button>
-        <h3>Controls</h3>
-        <div class="control-group">
-          <label class="control-label">Time Scale</label>
-          <input type="range" id="time-scale" min="0.1" max="10" step="0.1" value="1" />
-          <span id="time-value">1x</span>
-        </div>
-        <div class="control-group">
-          <label class="control-label">Global Eccentricity</label>
-          <input type="range" id="eccentricity" min="0" max="0.9" step="0.01" value="0.2" />
-          <span id="eccentricity-value">0.2</span>
-        </div>
-        <div class="control-group">
-          <label class="control-label">Global Semi-major Axis Multiplier</label>
-          <input type="range" id="semi-major" min="0.1" max="2" step="0.1" value="1" />
-          <span id="semi-major-value">1x</span>
-        </div>
-        <div class="control-group">
-          <button id="reset-controls">Reset Controls</button>
-        </div>
       </div>
       <!-- Info Panel -->
       <div id="info-panel">
@@ -589,6 +691,53 @@
           </div>
         </div>
       </div>
+     
+<!-- Kompetensi Section -->
+<div id="kompetensi" style="display:none;">
+  <div class="kompetensi-container">
+    <h2>Kompetensi Inti</h2>
+    <div class="kompetensi-content">
+      <div class="kompetensi-text">
+        <p>
+          KI 3 : Memahami, menerapkan, menganalisis pengetahuan faktual, konseptual, prosedural berdasarkan rasa ingin tahunya tentang ilmu pengetahuan, teknologi, seni, budaya, dan humaniora dengan wawasan kemanusiaan, kebangsaan, kenegaraan, dan peradaban terkait fenomena dan kejadian, serta menerapkan pengetahuan prosedural pada bidang kajian yang spesifik sesuai dengan bakat dan minatnya untuk memecahkan masalah. 
+        <p>
+          KI 4 : Mengolah, menalar, dan menyaji dalam ranah konkret dan ranah abstrak terkait dengan pengembangan dari yang dipelajarinya di sekolah secara mandiri, dan mampu menggunakan metoda sesuai kaidah keilmuan.
+        </p>
+        <br>
+      <h2>Kompetensi Dasar</h2>
+    <div class="kompetensi-content">
+      <div class="kompetensi-text">
+        <p>
+          3.8 Menganalisis keteraturan gerak planet dan satelit dalam tatasurya berdasarkan hukum-hukum Newton
+          4.8 Menyajikan karya mengenai gerak satelit buatan yang mengorbit bumi, pemanfaatan dan dampak yang ditimbulkannya dari penelusuran berbagai sumber informasi 
+        </p>
+        <p style="text-align:center;">
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Script untuk toggle tampilkan bagian kompetensi -->
+<script>
+  document.getElementById("view-kompetensi").addEventListener("click", function () {
+    const section = document.getElementById("kompetensi");
+    section.style.display = (section.style.display === "none") ? "block" : "none";
+  });
+</script>
+<style>
+  #kompetensi {
+    margin-top: 80px; /* Geser isi ke bawah */
+    padding: 20px;
+    color: white;
+  }
+
+  .kompetensi-container {
+    max-width: 800px;
+    margin: auto;
+  }
+</style>
+
       <!-- Kepler's Laws Section -->
       <div id="kepler-laws">
         <!-- Lesson Visualizations-->
@@ -1420,7 +1569,6 @@
         addPerformanceModeToggle();
         animate();
       }
-
       // Animation loop with smooth pan integration and mobile button visibility update
       function animate() {
         requestAnimationFrame(animate);
